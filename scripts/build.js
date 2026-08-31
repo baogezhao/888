@@ -76,6 +76,7 @@ posts.forEach(post => {
     <span>发布时间：${post.date}</span> | 
     <span class="source-tag">来源：${post.source}</span>
   </div>
+  ${post.thumbnail ? `<img class="cover" src="${post.thumbnail}" alt="${post.title}">` : ''}
   <div class="content">${post.htmlContent}</div>
 </body>
 </html>`;
@@ -87,8 +88,15 @@ posts.forEach(post => {
 const recentPosts = posts.slice(0, 20);
 const listItemsHtml = recentPosts.map(p => `
   <li class="post-item">
-    <a href="./${p.slug}.html" target="_blank" class="post-title">${p.title}</a>
-    <span class="post-date">${p.date}</span>
+    <a href="./${p.slug}.html" class="post-cover-link">
+      ${p.thumbnail ? `<img class="post-cover" src="${p.thumbnail}" alt="${p.title}">` : '<div class="post-cover placeholder">暂无图片</div>'}
+    </a>
+    <div class="post-info">
+      <a href="./${p.slug}.html" class="post-title">${p.title}</a>
+      <div class="post-date">${p.date} · ${p.author}</div>
+      <p class="post-summary">${p.summary}</p>
+      <a href="./${p.slug}.html" class="read-more">阅读全文 →</a>
+    </div>
   </li>
 `).join('');
 
@@ -99,13 +107,18 @@ const indexHtml = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>个人主页 - 最新文章</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    body { font-family: Arial, sans-serif; max-width: 960px; margin: 0 auto; padding: 20px; background: #f7f8fa; }
     h1 { border-bottom: 2px solid #1a73e8; padding-bottom: 10px; color: #333; }
     .post-list { list-style: none; padding: 0; }
-    .post-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
-    .post-title { font-size: 16px; color: #1a73e8; text-decoration: none; }
+    .post-item { display: grid; grid-template-columns: 240px 1fr; gap: 22px; padding: 20px; margin: 18px 0; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    .post-cover { display: block; width: 100%; height: 150px; object-fit: cover; border-radius: 7px; background: #e5e7eb; }
+    .placeholder { display: grid; place-items: center; color: #94a3b8; }
+    .post-title { font-size: 22px; font-weight: 700; color: #1a73e8; text-decoration: none; }
     .post-title:hover { text-decoration: underline; }
-    .post-date { color: #888; font-size: 14px; }
+    .post-date { color: #888; font-size: 14px; margin-top: 7px; }
+    .post-summary { color: #475569; line-height: 1.6; margin: 12px 0; }
+    .read-more { color: #1a73e8; text-decoration: none; }
+    @media (max-width: 650px) { .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } }
   </style>
 </head>
 <body>
@@ -118,11 +131,11 @@ const indexHtml = `<!DOCTYPE html>
 
 fs.writeFileSync(path.join(outputDir, 'index.html'), indexHtml);
 
-// 拷贝后台管理界面到构建输出目录
-const adminSource = path.join(__dirname, '../admin');
-const adminDest = path.join(outputDir, 'admin');
-if (fs.existsSync(adminSource)) {
-  fs.cpSync(adminSource, adminDest, { recursive: true });
+// Copy uploaded article images into the published site.
+const imagesSource = path.join(__dirname, '../images');
+const imagesDest = path.join(outputDir, 'images');
+if (fs.existsSync(imagesSource)) {
+  fs.cpSync(imagesSource, imagesDest, { recursive: true });
 }
 
 console.log('静态网站构建完成！');
