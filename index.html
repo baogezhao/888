@@ -29,7 +29,7 @@
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <img class="site-logo" src="./images/site-logo.png" alt="宝哥博客 Logo">
+      <img class="site-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo">
       <div class="header-copy">
         <h1 class="site-title">宝哥彩吧</h1>
         <p class="site-description">知名足彩专家，前腾讯彩票和《足彩310》主编，五要素创始人</p>
@@ -66,5 +66,16 @@
 
     </ul>
   </main>
+  <script>
+    document.querySelectorAll('img').forEach(image => {
+      if (image.classList.contains('post-cover')) { image.loading = 'lazy'; image.decoding = 'async'; }
+      const originalUrl = image.currentSrc || image.src; let retries = 0;
+      image.addEventListener('error', () => {
+        if (retries >= 2) return;
+        retries += 1;
+        setTimeout(() => { image.src = originalUrl + (originalUrl.includes('?') ? '&' : '?') + 'retry=' + retries; }, retries * 1000);
+      });
+    });
+  </script>
 </body>
 </html>

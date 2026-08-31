@@ -31,7 +31,7 @@
 </head>
 <body>
   <header class="article-header">
-    <a class="brand" href="./index.html"><img class="brand-logo" src="./images/site-logo.png" alt="宝哥博客 Logo"><span>宝哥的个人博客</span></a>
+    <a class="brand" href="./index.html"><img class="brand-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo"><span>宝哥彩吧</span></a>
     <a class="home-link" href="./index.html">← 返回主页</a>
   </header>
   <h1>宝哥新家开业了，欢迎大家收藏和转发</h1>
@@ -41,7 +41,7 @@
     <span class="source-tag">来源：原创</span>
   </div>
   
-  <div class="content"><p><img src="./images/1788151235182-Weixin-Image_20260831000528_1893_39.jpg" alt="Weixin Image_20260831000528_1893_39.jpg"><h2>宝哥新家开业了！</h2><div><b>经过美女工程师几天的加班，宝哥的新家终于装修完成，开业了！</b></div><div>在这期间，不少朋友都焦急地问我新家的地址，说看不到宝哥的推荐，生活没有了希望。</div><div>真得非常感谢朋友们多年来对宝哥的支持，宝哥很是感激，唯有更用心地给大家提供赛事分析。</div><div><p>请大家收藏好这个地址，也记得分享给好友，转发到朋友圈，让更多朋友找到我！</p><p>宝哥vx个人号：baoge888100</p></div></p>
+  <div class="content"><p><img loading="lazy" decoding="async" src="./images/1788151235182-Weixin-Image_20260831000528_1893_39.jpg" alt="Weixin Image_20260831000528_1893_39.jpg"><h2>宝哥新家开业了！</h2><div><b>经过美女工程师几天的加班，宝哥的新家终于装修完成，开业了！</b></div><div>在这期间，不少朋友都焦急地问我新家的地址，说看不到宝哥的推荐，生活没有了希望。</div><div>真得非常感谢朋友们多年来对宝哥的支持，宝哥很是感激，唯有更用心地给大家提供赛事分析。</div><div><p>请大家收藏好这个地址，也记得分享给好友，转发到朋友圈，让更多朋友找到我！</p><p>宝哥vx个人号：baoge888100</p></div></p>
 </div>
   <div class="share-bar">
     <strong>分享文章：</strong>
@@ -98,6 +98,15 @@
       const copied = await copyShareUrl();
       event.currentTarget.textContent = copied ? '链接已复制' : '复制失败，请长按地址栏';
     };
+    document.querySelectorAll('img').forEach(image => {
+      const originalUrl = image.currentSrc || image.src;
+      let retries = 0;
+      image.addEventListener('error', () => {
+        if (retries >= 2) return;
+        retries += 1;
+        setTimeout(() => { image.src = originalUrl + (originalUrl.includes('?') ? '&' : '?') + 'retry=' + retries; }, retries * 1000);
+      });
+    });
   </script>
 </body>
 </html>
