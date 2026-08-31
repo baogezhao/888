@@ -29,7 +29,7 @@
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <img class="site-logo" src="./images/site-logo.png" alt="宝哥博客 Logo">
+      <img class="site-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo">
       <div class="header-copy">
         <h1 class="site-title">宝哥彩吧</h1>
         <p class="site-description">知名足彩专家，前腾讯彩票和《足彩310》主编，五要素创始人</p>
@@ -40,7 +40,42 @@
     <h1>最新文章</h1>
     <ul class="post-list">
       
+  <li class="post-item">
+    <a href="./2026-08-31-宝哥-周二-阿森纳继续冲连胜-巴萨再迎大比分.html" target="_blank" rel="noopener" class="post-cover-link">
+      <img class="post-cover" src="./images/1788153758861-1-real-madrid.png" alt="【宝哥】周二：阿森纳继续冲连胜，巴萨再迎大比分？">
+    </a>
+    <div class="post-info">
+      <a href="./2026-08-31-宝哥-周二-阿森纳继续冲连胜-巴萨再迎大比分.html" target="_blank" rel="noopener" class="post-title">【宝哥】周二：阿森纳继续冲连胜，巴萨再迎大比分？</a>
+      <div class="post-date">2026-08-31 13:16 · 宝哥</div>
+      <p class="post-summary">宝哥搬新家了，继续给大家带来14场和任九初步观点，希望能对大家有所帮助。欢迎大家收藏和转发。</p>
+      <a href="./2026-08-31-宝哥-周二-阿森纳继续冲连胜-巴萨再迎大比分.html" target="_blank" rel="noopener" class="read-more">阅读全文 →</a>
+    </div>
+  </li>
+
+  <li class="post-item">
+    <a href="./2026-08-31-宝哥新家开业了-欢迎大家收藏和转发.html" target="_blank" rel="noopener" class="post-cover-link">
+      <img class="post-cover" src="./images/1788151235182-Weixin-Image_20260831000528_1893_39.jpg" alt="宝哥新家开业了，欢迎大家收藏和转发">
+    </a>
+    <div class="post-info">
+      <a href="./2026-08-31-宝哥新家开业了-欢迎大家收藏和转发.html" target="_blank" rel="noopener" class="post-title">宝哥新家开业了，欢迎大家收藏和转发</a>
+      <div class="post-date">2026-08-31 12:39 · 宝哥</div>
+      <p class="post-summary">宝哥新家开业了！经过美女工程师几天的加班，宝哥的新家终于装修...</p>
+      <a href="./2026-08-31-宝哥新家开业了-欢迎大家收藏和转发.html" target="_blank" rel="noopener" class="read-more">阅读全文 →</a>
+    </div>
+  </li>
+
     </ul>
   </main>
+  <script>
+    document.querySelectorAll('img').forEach(image => {
+      if (image.classList.contains('post-cover')) { image.loading = 'lazy'; image.decoding = 'async'; }
+      const originalUrl = image.currentSrc || image.src; let retries = 0;
+      image.addEventListener('error', () => {
+        if (retries >= 2) return;
+        retries += 1;
+        setTimeout(() => { image.src = originalUrl + (originalUrl.includes('?') ? '&' : '?') + 'retry=' + retries; }, retries * 1000);
+      });
+    });
+  </script>
 </body>
 </html>

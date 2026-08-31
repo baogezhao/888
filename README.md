@@ -147,7 +147,7 @@ summary: 这是文章摘要。
 ![图片说明](./images/example.jpg)
 ```
 
-支持 JPG、JPEG、PNG、GIF、WebP 和 SVG 图片，单次请求大小上限为 20 MB。
+支持 JPG、JPEG、PNG、GIF、WebP 和 SVG 图片，单次请求大小上限为 20 MB。后台会将普通静态图片自动缩放到最长边不超过 1600 像素，并转换为压缩 JPG；GIF 和 SVG 会保留原格式。
 
 ### 设置文章首图
 

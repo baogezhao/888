@@ -50,7 +50,7 @@ const posts = files.map(filename => {
     ? data.summary 
     : plainText.slice(0, 30) + (plainText.length > 30 ? '...' : '');
 
-  const htmlContent = marked.parse(content);
+  const htmlContent = marked.parse(content).replace(/<img(?![^>]*\bloading=)/gi, '<img loading="lazy" decoding="async"');
   const slug = filename.replace('.md', '');
   const publishedAt = data.date ? new Date(data.date) : null;
   const publishedTimestamp = publishedAt && !Number.isNaN(publishedAt.getTime()) ? publishedAt.getTime() : 0;
@@ -108,7 +108,7 @@ posts.forEach(post => {
 </head>
 <body>
   <header class="article-header">
-    <a class="brand" href="./index.html"><img class="brand-logo" src="./images/site-logo.png" alt="宝哥博客 Logo"><span>宝哥的个人博客</span></a>
+    <a class="brand" href="./index.html"><img class="brand-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo"><span>宝哥彩吧</span></a>
     <a class="home-link" href="./index.html">← 返回主页</a>
   </header>
   <h1>${post.title}</h1>
@@ -174,6 +174,15 @@ posts.forEach(post => {
       const copied = await copyShareUrl();
       event.currentTarget.textContent = copied ? '链接已复制' : '复制失败，请长按地址栏';
     };
+    document.querySelectorAll('img').forEach(image => {
+      const originalUrl = image.currentSrc || image.src;
+      let retries = 0;
+      image.addEventListener('error', () => {
+        if (retries >= 2) return;
+        retries += 1;
+        setTimeout(() => { image.src = originalUrl + (originalUrl.includes('?') ? '&' : '?') + 'retry=' + retries; }, retries * 1000);
+      });
+    });
   </script>
 </body>
 </html>`;
@@ -228,7 +237,7 @@ const indexHtml = `<!DOCTYPE html>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <img class="site-logo" src="./images/site-logo.png" alt="宝哥博客 Logo">
+      <img class="site-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo">
       <div class="header-copy">
         <h1 class="site-title">宝哥彩吧</h1>
         <p class="site-description">知名足彩专家，前腾讯彩票和《足彩310》主编，五要素创始人</p>
@@ -241,6 +250,17 @@ const indexHtml = `<!DOCTYPE html>
       ${listItemsHtml}
     </ul>
   </main>
+  <script>
+    document.querySelectorAll('img').forEach(image => {
+      if (image.classList.contains('post-cover')) { image.loading = 'lazy'; image.decoding = 'async'; }
+      const originalUrl = image.currentSrc || image.src; let retries = 0;
+      image.addEventListener('error', () => {
+        if (retries >= 2) return;
+        retries += 1;
+        setTimeout(() => { image.src = originalUrl + (originalUrl.includes('?') ? '&' : '?') + 'retry=' + retries; }, retries * 1000);
+      });
+    });
+  </script>
 </body>
 </html>`;
 
