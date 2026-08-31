@@ -7,18 +7,22 @@
   <!-- 微信分享 / Open Graph 元标签 -->
   <meta property="og:type" content="article" />
   <meta property="og:title" content="testtest" />
-  <meta property="og:description" content="来源：原创 | test" />
+  <meta name="description" content="作者：宝哥 | test" />
+  <meta property="og:description" content="作者：宝哥 | test" />
   <meta property="og:image" content="./images/1788146326918-001.png" />
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
-    .home-link { display: inline-block; margin-bottom: 18px; padding: 8px 12px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; text-decoration: none; }
-    .home-link:hover { background: #dbeafe; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #292524; }
+    .article-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 3px solid #b91c1c; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #991b1b; font-size: 20px; font-weight: 700; text-decoration: none; }
+    .brand-logo { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 3px solid #dc2626; }
+    .home-link { display: inline-block; padding: 8px 12px; border-radius: 6px; background: #fef2f2; color: #b91c1c; text-decoration: none; }
+    .home-link:hover { background: #fee2e2; }
     .meta { color: #666; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-    .source-tag { background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .source-tag { background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     img { max-width: 100%; height: auto; }
     .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 28px 0; padding-top: 18px; border-top: 1px solid #eee; }
     .share-bar a, .share-bar button { border: 0; border-radius: 5px; padding: 8px 12px; background: #f1f5f9; color: #334155; text-decoration: none; cursor: pointer; font-size: 14px; }
-    .share-bar a:hover, .share-bar button:hover { background: #dbeafe; color: #1d4ed8; }
+    .share-bar a:hover, .share-bar button:hover { background: #fee2e2; color: #b91c1c; }
     .wechat-guide { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.78); color: white; padding: 28px; text-align: right; }
     .wechat-guide.show { display: block; }
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
@@ -26,10 +30,13 @@
   </style>
 </head>
 <body>
-  <a class="home-link" href="./index.html">← 返回主页</a>
+  <header class="article-header">
+    <a class="brand" href="./index.html"><img class="brand-logo" src="./images/site-logo.png" alt="宝哥博客 Logo"><span>宝哥的个人博客</span></a>
+    <a class="home-link" href="./index.html">← 返回主页</a>
+  </header>
   <h1>testtest</h1>
   <div class="meta">
-    <span>作者：baoge</span> | 
+    <span>作者：宝哥</span> | 
     <span>发布时间：2026-08-31</span> | 
     <span class="source-tag">来源：原创</span>
   </div>
