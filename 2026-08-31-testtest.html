@@ -14,6 +14,9 @@
     .meta { color: #666; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
     .source-tag { background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     img { max-width: 100%; height: auto; }
+    .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 28px 0; padding-top: 18px; border-top: 1px solid #eee; }
+    .share-bar a, .share-bar button { border: 0; border-radius: 5px; padding: 8px 12px; background: #f1f5f9; color: #334155; text-decoration: none; cursor: pointer; font-size: 14px; }
+    .share-bar a:hover, .share-bar button:hover { background: #dbeafe; color: #1d4ed8; }
   </style>
 </head>
 <body>
@@ -27,5 +30,35 @@
   <div class="content"><p>hhhhhh
 <img src="./images/1788146326918-001.png" alt="001.png"></p>
 </div>
+  <div class="share-bar">
+    <strong>分享文章：</strong>
+    <button id="share-wechat-friend">微信好友</button>
+    <button id="share-wechat-moments">微信朋友圈</button>
+    <a id="share-weibo" target="_blank" rel="noopener">微博</a>
+    <button id="copy-link">一键复制链接</button>
+  </div>
+  <script>
+    const shareUrl = window.location.href;
+    const shareTitle = document.title;
+    document.getElementById('share-weibo').href = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareTitle);
+    async function shareToWechat(target) {
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: shareTitle, text: shareTitle, url: shareUrl });
+          return;
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+        }
+      }
+      await navigator.clipboard.writeText(shareUrl);
+      alert('链接已复制，请打开微信并分享到' + target + '。');
+    }
+    document.getElementById('share-wechat-friend').onclick = () => shareToWechat('好友');
+    document.getElementById('share-wechat-moments').onclick = () => shareToWechat('朋友圈');
+    document.getElementById('copy-link').onclick = async event => {
+      await navigator.clipboard.writeText(shareUrl);
+      event.currentTarget.textContent = '链接已复制';
+    };
+  </script>
 </body>
 </html>
