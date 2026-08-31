@@ -34,19 +34,22 @@ const posts = files.map(filename => {
   // 纯文本处理（用于提取无标签纯文字）
   const plainText = content.replace(/<[^>]+>/g, '').replace(/[#*`~!\[\]\(\)]/g, '').trim();
 
-  // 核心摘要逻辑：留空则自动抓取前100字
+  // 摘要留空时，自动抓取正文前 30 个字。
   let summary = data.summary && data.summary.trim() !== '' 
     ? data.summary 
-    : plainText.slice(0, 100) + (plainText.length > 100 ? '...' : '');
+    : plainText.slice(0, 30) + (plainText.length > 30 ? '...' : '');
 
   const htmlContent = marked.parse(content);
   const slug = filename.replace('.md', '');
+  const publishedAt = data.date ? new Date(data.date) : null;
+  const publishedTimestamp = publishedAt && !Number.isNaN(publishedAt.getTime()) ? publishedAt.getTime() : 0;
 
   return {
     slug,
     title: data.title || '无标题',
-    author: data.author || '匿名',
-    date: data.date ? new Date(data.date).toISOString().split('T')[0] : '',
+    author: !data.author || data.author === 'baoge' ? '宝哥' : data.author,
+    date: publishedTimestamp ? publishedAt.toISOString().split('T')[0] : '',
+    publishedTimestamp,
     source: data.source || '本站',
     // Prefer an explicitly selected cover, otherwise use the first body image.
     thumbnail: data.thumbnail || findFirstImage(content),
@@ -56,8 +59,8 @@ const posts = files.map(filename => {
   };
 });
 
-// 按发布时间降序排列
-posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+// 按完整发布时间倒序排列，同一天发布的文章也会按具体时间排序。
+posts.sort((a, b) => b.publishedTimestamp - a.publishedTimestamp);
 
 // 2. 生成文章详情页
 posts.forEach(post => {
@@ -70,18 +73,22 @@ posts.forEach(post => {
   <!-- 微信分享 / Open Graph 元标签 -->
   <meta property="og:type" content="article" />
   <meta property="og:title" content="${post.title}" />
-  <meta property="og:description" content="来源：${post.source} | ${post.summary}" />
+  <meta name="description" content="作者：${post.author} | ${post.summary}" />
+  <meta property="og:description" content="作者：${post.author} | ${post.summary}" />
   <meta property="og:image" content="${post.thumbnail}" />
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
-    .home-link { display: inline-block; margin-bottom: 18px; padding: 8px 12px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; text-decoration: none; }
-    .home-link:hover { background: #dbeafe; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #292524; }
+    .article-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 3px solid #b91c1c; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #991b1b; font-size: 20px; font-weight: 700; text-decoration: none; }
+    .brand-logo { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 3px solid #dc2626; }
+    .home-link { display: inline-block; padding: 8px 12px; border-radius: 6px; background: #fef2f2; color: #b91c1c; text-decoration: none; }
+    .home-link:hover { background: #fee2e2; }
     .meta { color: #666; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-    .source-tag { background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .source-tag { background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     img { max-width: 100%; height: auto; }
     .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 28px 0; padding-top: 18px; border-top: 1px solid #eee; }
     .share-bar a, .share-bar button { border: 0; border-radius: 5px; padding: 8px 12px; background: #f1f5f9; color: #334155; text-decoration: none; cursor: pointer; font-size: 14px; }
-    .share-bar a:hover, .share-bar button:hover { background: #dbeafe; color: #1d4ed8; }
+    .share-bar a:hover, .share-bar button:hover { background: #fee2e2; color: #b91c1c; }
     .wechat-guide { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.78); color: white; padding: 28px; text-align: right; }
     .wechat-guide.show { display: block; }
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
@@ -89,7 +96,10 @@ posts.forEach(post => {
   </style>
 </head>
 <body>
-  <a class="home-link" href="./index.html">← 返回主页</a>
+  <header class="article-header">
+    <a class="brand" href="./index.html"><img class="brand-logo" src="./images/site-logo.png" alt="宝哥博客 Logo"><span>宝哥的个人博客</span></a>
+    <a class="home-link" href="./index.html">← 返回主页</a>
+  </header>
   <h1>${post.title}</h1>
   <div class="meta">
     <span>作者：${post.author}</span> | 
@@ -184,29 +194,34 @@ const indexHtml = `<!DOCTYPE html>
   <title>个人主页 - 最新文章</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fa; }
-    .site-header { color: white; background: linear-gradient(135deg, #1d4ed8, #6d28d9); padding: 54px 20px; }
-    .header-inner { max-width: 960px; margin: 0 auto; }
+    .site-header { color: white; background: linear-gradient(135deg, #991b1b, #dc2626 58%, #ef4444); padding: 42px 20px; }
+    .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 20px; }
+    .site-logo { width: 92px; height: 92px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,.9); box-shadow: 0 5px 18px rgba(69,10,10,.35); flex: 0 0 auto; }
+    .header-copy { min-width: 0; }
     .site-title { margin: 0; font-size: 40px; letter-spacing: 1px; }
     .site-description { margin: 12px 0 0; font-size: 18px; opacity: .86; }
     .page-content { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
-    h1 { border-bottom: 2px solid #1a73e8; padding-bottom: 10px; color: #333; }
+    h1 { border-bottom: 2px solid #dc2626; padding-bottom: 10px; color: #333; }
     .post-list { list-style: none; padding: 0; }
     .post-item { display: grid; grid-template-columns: 240px 1fr; gap: 22px; padding: 20px; margin: 18px 0; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
     .post-cover { display: block; width: 100%; height: 150px; object-fit: cover; border-radius: 7px; background: #e5e7eb; }
     .placeholder { display: grid; place-items: center; color: #94a3b8; }
-    .post-title { font-size: 22px; font-weight: 700; color: #1a73e8; text-decoration: none; }
+    .post-title { font-size: 22px; font-weight: 700; color: #b91c1c; text-decoration: none; }
     .post-title:hover { text-decoration: underline; }
     .post-date { color: #888; font-size: 14px; margin-top: 7px; }
     .post-summary { color: #475569; line-height: 1.6; margin: 12px 0; }
-    .read-more { color: #1a73e8; text-decoration: none; }
-    @media (max-width: 650px) { .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } }
+    .read-more { color: #b91c1c; text-decoration: none; font-weight: 600; }
+    @media (max-width: 650px) { .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <h1 class="site-title">宝哥的个人博客</h1>
-      <p class="site-description">记录思考、生活与值得分享的内容</p>
+      <img class="site-logo" src="./images/site-logo.png" alt="宝哥博客 Logo">
+      <div class="header-copy">
+        <h1 class="site-title">宝哥的个人博客</h1>
+        <p class="site-description">记录思考、生活与值得分享的内容</p>
+      </div>
     </div>
   </header>
   <main class="page-content">
