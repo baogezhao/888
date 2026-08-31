@@ -11,6 +11,8 @@
   <meta property="og:image" content="./images/1788146326918-001.png" />
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+    .home-link { display: inline-block; margin-bottom: 18px; padding: 8px 12px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; text-decoration: none; }
+    .home-link:hover { background: #dbeafe; }
     .meta { color: #666; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
     .source-tag { background: #e8f0fe; color: #1a73e8; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     img { max-width: 100%; height: auto; }
@@ -24,6 +26,7 @@
   </style>
 </head>
 <body>
+  <a class="home-link" href="./index.html">← 返回主页</a>
   <h1>testtest</h1>
   <div class="meta">
     <span>作者：baoge</span> | 
@@ -36,8 +39,7 @@
 </div>
   <div class="share-bar">
     <strong>分享文章：</strong>
-    <button id="share-wechat-friend">微信好友</button>
-    <button id="share-wechat-moments">微信朋友圈</button>
+    <button id="share-wechat">微信分享</button>
     <a id="share-weibo" target="_blank" rel="noopener">微博</a>
     <button id="copy-link">一键复制链接</button>
   </div>
@@ -84,8 +86,7 @@
       const copied = await copyShareUrl();
       alert(copied ? '链接已复制，请打开微信并分享到' + target + '。' : '请长按浏览器地址栏复制链接，再打开微信分享。');
     }
-    document.getElementById('share-wechat-friend').onclick = () => shareToWechat('好友');
-    document.getElementById('share-wechat-moments').onclick = () => shareToWechat('朋友圈');
+    document.getElementById('share-wechat').onclick = () => shareToWechat('好友或朋友圈');
     document.getElementById('wechat-guide').onclick = event => event.currentTarget.classList.remove('show');
     document.getElementById('copy-link').onclick = async event => {
       const copied = await copyShareUrl();
