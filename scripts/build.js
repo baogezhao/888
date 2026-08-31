@@ -199,7 +199,7 @@ const indexHtml = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>个人主页 - 最新文章</title>
+  <title>宝哥彩吧 - 欢迎转发</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fa; }
     .site-header { color: white; background: linear-gradient(135deg, #991b1b, #dc2626 58%, #ef4444); padding: 42px 20px; }
