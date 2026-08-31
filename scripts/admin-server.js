@@ -16,7 +16,35 @@ fs.mkdirSync(imagesDir, { recursive: true });
 function json(res, status, value) { res.writeHead(status, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}); res.end(JSON.stringify(value)); }
 function safeName(value, fallback) { const cleaned=String(value||'').normalize('NFKC').replace(/[^\p{L}\p{N}._-]+/gu,'-').replace(/^-+|-+$/g,''); return cleaned||fallback; }
 function readBody(req) { return new Promise((resolve,reject)=>{ let body=''; req.on('data',chunk=>{body+=chunk;if(body.length>20*1024*1024)req.destroy(new Error('请求内容超过 20MB'))}); req.on('end',()=>{try{resolve(body?JSON.parse(body):{})}catch{reject(new Error('请求格式无效'))}});req.on('error',reject); }); }
-function git(args) { return new Promise((resolve,reject)=>execFile('git',args,{cwd:root},(error,stdout,stderr)=>error?reject(new Error((stderr||error.message).trim())):resolve(stdout.trim()))); }
+
+function findGit() {
+  const candidates = [
+    process.env.GIT_PATH,
+    'C:\\Program Files\\Git\\cmd\\git.exe',
+    'C:\\Program Files\\Git\\bin\\git.exe',
+    process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Programs', 'Git', 'cmd', 'git.exe')
+  ].filter(Boolean);
+
+  const desktopDir = process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'GitHubDesktop');
+  if (desktopDir && fs.existsSync(desktopDir)) {
+    const desktopGit = fs.readdirSync(desktopDir)
+      .filter(name => name.startsWith('app-'))
+      .sort().reverse()
+      .map(name => path.join(desktopDir, name, 'resources', 'app', 'git', 'cmd', 'git.exe'))
+      .find(candidate => fs.existsSync(candidate));
+    if (desktopGit) candidates.push(desktopGit);
+  }
+
+  return candidates.find(candidate => fs.existsSync(candidate)) || 'git';
+}
+
+const gitExecutable = findGit();
+function git(args) {
+  return new Promise((resolve,reject)=>execFile(gitExecutable,args,{cwd:root},(error,stdout,stderr)=>{
+    if (error && error.code === 'ENOENT') return reject(new Error('找不到 Git。请安装 Git for Windows，或设置 GIT_PATH 后重新启动后台。'));
+    return error ? reject(new Error((stderr||error.message).trim())) : resolve(stdout.trim());
+  }));
+}
 
 http.createServer(async(req,res)=>{try{
   const url=new URL(req.url,`http://${req.headers.host}`);
@@ -29,4 +57,4 @@ http.createServer(async(req,res)=>{try{
   if(req.method==='POST'&&url.pathname==='/api/publish'){const data=await readBody(req),message=String(data.message||'').trim();if(!message)return json(res,400,{error:'Commit 信息不能为空'});await git(['add','--','posts','images']);const staged=await git(['diff','--cached','--name-only']);if(staged)await git(['commit','-m',message]);await git(['push']);return json(res,200,{message:staged?`发布成功：${message}\n${staged}`:'没有新变更，已有本地 commit 已推送。'})}
   if(req.method==='DELETE'&&url.pathname==='/api/post'){const filename=path.basename(url.searchParams.get('filename')||''),data=await readBody(req),message=String(data.message||'').trim();if(!filename.endsWith('.md'))return json(res,400,{error:'文件名无效'});if(!message)return json(res,400,{error:'Commit 信息不能为空'});const filePath=path.join(postsDir,filename);if(!fs.existsSync(filePath))return json(res,404,{error:'文章不存在'});fs.unlinkSync(filePath);await git(['add','-A','--','posts']);await git(['commit','-m',message]);await git(['push']);return json(res,200,{message:`已删除并发布：${filename}`})}
   json(res,404,{error:'Not Found'});
-}catch(error){json(res,500,{error:error.message})}}).listen(port,'127.0.0.1',()=>{console.log(`本地文章后台：http://127.0.0.1:${port}/admin/`);console.log('按 Ctrl+C 停止服务')});
+}catch(error){json(res,500,{error:error.message})}}).listen(port,'127.0.0.1',()=>{console.log(`本地文章后台：http://127.0.0.1:${port}/admin/`);console.log(`Git：${gitExecutable}`);console.log('按 Ctrl+C 停止服务')});

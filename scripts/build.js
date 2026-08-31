@@ -80,6 +80,10 @@ posts.forEach(post => {
     .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 28px 0; padding-top: 18px; border-top: 1px solid #eee; }
     .share-bar a, .share-bar button { border: 0; border-radius: 5px; padding: 8px 12px; background: #f1f5f9; color: #334155; text-decoration: none; cursor: pointer; font-size: 14px; }
     .share-bar a:hover, .share-bar button:hover { background: #dbeafe; color: #1d4ed8; }
+    .wechat-guide { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.78); color: white; padding: 28px; text-align: right; }
+    .wechat-guide.show { display: block; }
+    .wechat-guide .arrow { font-size: 48px; line-height: 1; }
+    .wechat-guide p { max-width: 320px; margin: 16px 0 0 auto; font-size: 18px; line-height: 1.7; }
   </style>
 </head>
 <body>
@@ -98,11 +102,38 @@ posts.forEach(post => {
     <a id="share-weibo" target="_blank" rel="noopener">微博</a>
     <button id="copy-link">一键复制链接</button>
   </div>
+  <div id="wechat-guide" class="wechat-guide">
+    <div class="arrow">↗</div>
+    <p id="wechat-guide-text"></p>
+    <small>点击任意位置关闭提示</small>
+  </div>
   <script>
     const shareUrl = window.location.href;
     const shareTitle = document.title;
     document.getElementById('share-weibo').href = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareTitle);
+    const isWechat = /MicroMessenger/i.test(navigator.userAgent);
+    function showWechatGuide(target) {
+      document.getElementById('wechat-guide-text').textContent = '请点击右上角“…”菜单，然后选择“发送给朋友”或“分享到朋友圈”。当前目标：' + target;
+      document.getElementById('wechat-guide').classList.add('show');
+    }
+    async function copyShareUrl() {
+      if (navigator.clipboard && window.isSecureContext) {
+        try { await navigator.clipboard.writeText(shareUrl); return true; } catch (error) {}
+      }
+      const input = document.createElement('textarea');
+      input.value = shareUrl;
+      input.setAttribute('readonly', '');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.appendChild(input);
+      input.select();
+      input.setSelectionRange(0, input.value.length);
+      const copied = document.execCommand('copy');
+      document.body.removeChild(input);
+      return copied;
+    }
     async function shareToWechat(target) {
+      if (isWechat) return showWechatGuide(target);
       if (navigator.share) {
         try {
           await navigator.share({ title: shareTitle, text: shareTitle, url: shareUrl });
@@ -111,14 +142,15 @@ posts.forEach(post => {
           if (error.name === 'AbortError') return;
         }
       }
-      await navigator.clipboard.writeText(shareUrl);
-      alert('链接已复制，请打开微信并分享到' + target + '。');
+      const copied = await copyShareUrl();
+      alert(copied ? '链接已复制，请打开微信并分享到' + target + '。' : '请长按浏览器地址栏复制链接，再打开微信分享。');
     }
     document.getElementById('share-wechat-friend').onclick = () => shareToWechat('好友');
     document.getElementById('share-wechat-moments').onclick = () => shareToWechat('朋友圈');
+    document.getElementById('wechat-guide').onclick = event => event.currentTarget.classList.remove('show');
     document.getElementById('copy-link').onclick = async event => {
-      await navigator.clipboard.writeText(shareUrl);
-      event.currentTarget.textContent = '链接已复制';
+      const copied = await copyShareUrl();
+      event.currentTarget.textContent = copied ? '链接已复制' : '复制失败，请长按地址栏';
     };
   </script>
 </body>

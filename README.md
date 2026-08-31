@@ -272,6 +272,14 @@ npm install
 
 ### Git Commit 失败
 
+如果提示 `spawn git ENOENT`，表示系统环境变量中找不到 Git。本项目会自动查找 Git for Windows 和 GitHub Desktop 自带的 Git。更新代码后请先按 `Ctrl+C` 停止后台，再重新运行：
+
+```powershell
+npm.cmd run admin
+```
+
+启动信息中的 `Git：...` 应显示实际的 `git.exe` 路径。
+
 检查 Git 用户信息：
 
 ```powershell
