@@ -12,9 +12,12 @@ if (!fs.existsSync(postsDir)) {
   fs.mkdirSync(postsDir, { recursive: true });
 }
 
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
+// dist is generated output. Recreate it on every build so deleted articles do
+// not leave stale HTML pages behind.
+if (fs.existsSync(outputDir)) {
+  fs.rmSync(outputDir, { recursive: true, force: true });
 }
+fs.mkdirSync(outputDir, { recursive: true });
 
 function findFirstImage(content) {
   const markdownImage = content.match(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+["'][^"']*["'])?\s*\)/);
@@ -26,7 +29,7 @@ function findFirstImage(content) {
 
 function formatPublishTime(date) {
   return new Intl.DateTimeFormat('zh-CN', {
-    timeZone: 'America/Toronto',
+    timeZone: 'Asia/Shanghai',
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: false
   }).format(date).replace(/\//g, '-');
