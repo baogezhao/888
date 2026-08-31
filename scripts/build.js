@@ -24,6 +24,14 @@ function findFirstImage(content) {
   return htmlImage ? htmlImage[1] : '';
 }
 
+function formatPublishTime(date) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'America/Toronto',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).format(date).replace(/\//g, '-');
+}
+
 // 1. 读取并解析所有文章
 const files = fs.readdirSync(postsDir).filter(f => f.endsWith('.md'));
 const posts = files.map(filename => {
@@ -48,7 +56,7 @@ const posts = files.map(filename => {
     slug,
     title: data.title || '无标题',
     author: !data.author || data.author === 'baoge' ? '宝哥' : data.author,
-    date: publishedTimestamp ? publishedAt.toISOString().split('T')[0] : '',
+    date: publishedTimestamp ? formatPublishTime(publishedAt) : '',
     publishedTimestamp,
     source: data.source || '本站',
     // Prefer an explicitly selected cover, otherwise use the first body image.
