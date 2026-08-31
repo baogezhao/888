@@ -16,6 +16,14 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
 
+function findFirstImage(content) {
+  const markdownImage = content.match(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+["'][^"']*["'])?\s*\)/);
+  if (markdownImage) return markdownImage[1];
+
+  const htmlImage = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return htmlImage ? htmlImage[1] : '';
+}
+
 // 1. 读取并解析所有文章
 const files = fs.readdirSync(postsDir).filter(f => f.endsWith('.md'));
 const posts = files.map(filename => {
@@ -40,7 +48,9 @@ const posts = files.map(filename => {
     author: data.author || '匿名',
     date: data.date ? new Date(data.date).toISOString().split('T')[0] : '',
     source: data.source || '本站',
-    thumbnail: data.thumbnail || '',
+    // Prefer an explicitly selected cover, otherwise use the first body image.
+    thumbnail: data.thumbnail || findFirstImage(content),
+    detailCover: data.thumbnail || '',
     summary,
     htmlContent
   };
@@ -76,7 +86,7 @@ posts.forEach(post => {
     <span>发布时间：${post.date}</span> | 
     <span class="source-tag">来源：${post.source}</span>
   </div>
-  ${post.thumbnail ? `<img class="cover" src="${post.thumbnail}" alt="${post.title}">` : ''}
+  ${post.detailCover ? `<img class="cover" src="${post.detailCover}" alt="${post.title}">` : ''}
   <div class="content">${post.htmlContent}</div>
 </body>
 </html>`;
@@ -88,14 +98,14 @@ posts.forEach(post => {
 const recentPosts = posts.slice(0, 20);
 const listItemsHtml = recentPosts.map(p => `
   <li class="post-item">
-    <a href="./${p.slug}.html" class="post-cover-link">
+    <a href="./${p.slug}.html" target="_blank" rel="noopener" class="post-cover-link">
       ${p.thumbnail ? `<img class="post-cover" src="${p.thumbnail}" alt="${p.title}">` : '<div class="post-cover placeholder">暂无图片</div>'}
     </a>
     <div class="post-info">
-      <a href="./${p.slug}.html" class="post-title">${p.title}</a>
+      <a href="./${p.slug}.html" target="_blank" rel="noopener" class="post-title">${p.title}</a>
       <div class="post-date">${p.date} · ${p.author}</div>
       <p class="post-summary">${p.summary}</p>
-      <a href="./${p.slug}.html" class="read-more">阅读全文 →</a>
+      <a href="./${p.slug}.html" target="_blank" rel="noopener" class="read-more">阅读全文 →</a>
     </div>
   </li>
 `).join('');
@@ -107,7 +117,12 @@ const indexHtml = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>个人主页 - 最新文章</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 960px; margin: 0 auto; padding: 20px; background: #f7f8fa; }
+    body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fa; }
+    .site-header { color: white; background: linear-gradient(135deg, #1d4ed8, #6d28d9); padding: 54px 20px; }
+    .header-inner { max-width: 960px; margin: 0 auto; }
+    .site-title { margin: 0; font-size: 40px; letter-spacing: 1px; }
+    .site-description { margin: 12px 0 0; font-size: 18px; opacity: .86; }
+    .page-content { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
     h1 { border-bottom: 2px solid #1a73e8; padding-bottom: 10px; color: #333; }
     .post-list { list-style: none; padding: 0; }
     .post-item { display: grid; grid-template-columns: 240px 1fr; gap: 22px; padding: 20px; margin: 18px 0; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
@@ -122,10 +137,18 @@ const indexHtml = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <h1>最新文章</h1>
-  <ul class="post-list">
-    ${listItemsHtml}
-  </ul>
+  <header class="site-header">
+    <div class="header-inner">
+      <h1 class="site-title">宝哥的个人博客</h1>
+      <p class="site-description">记录思考、生活与值得分享的内容</p>
+    </div>
+  </header>
+  <main class="page-content">
+    <h1>最新文章</h1>
+    <ul class="post-list">
+      ${listItemsHtml}
+    </ul>
+  </main>
 </body>
 </html>`;
 
