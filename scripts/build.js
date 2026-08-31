@@ -6,6 +6,12 @@ const { marked } = require('marked');
 const postsDir = path.join(__dirname, '../posts');
 const outputDir = path.join(__dirname, '../dist');
 
+// Git does not track empty directories, so `posts` may not exist in a fresh
+// checkout before the first article is published.
+if (!fs.existsSync(postsDir)) {
+  fs.mkdirSync(postsDir, { recursive: true });
+}
+
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
