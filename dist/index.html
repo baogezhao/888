@@ -3,15 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#b91c1c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="宝哥彩吧">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./images/site-logo.png">
   <title>宝哥彩吧 - 欢迎转发</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fa; }
     .site-header { color: white; background: linear-gradient(135deg, #991b1b, #dc2626 58%, #ef4444); padding: 42px 20px; }
-    .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 20px; }
+    .header-inner { position: relative; max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 20px; padding-right: 168px; }
     .site-logo { width: 92px; height: 92px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,.9); box-shadow: 0 5px 18px rgba(69,10,10,.35); flex: 0 0 auto; }
     .header-copy { min-width: 0; }
     .site-title { margin: 0; font-size: 40px; letter-spacing: 1px; }
     .site-description { margin: 12px 0 0; font-size: 18px; opacity: .86; }
+    .install-button { position: absolute; top: 4px; right: 0; display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; padding: 10px 16px; background: rgba(255,255,255,.16); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(69,10,10,.18); backdrop-filter: blur(5px); }
+    .install-button:hover { background: rgba(255,255,255,.27); }
+    .install-button[hidden] { display: none; }
+    .install-dialog { width: min(420px, calc(100% - 36px)); border: 0; border-radius: 14px; padding: 0; color: #292524; box-shadow: 0 18px 60px rgba(0,0,0,.3); }
+    .install-dialog::backdrop { background: rgba(0,0,0,.55); }
+    .install-dialog-content { padding: 24px; }
+    .install-dialog h2 { margin: 0 0 12px; color: #991b1b; }
+    .install-dialog p { margin: 0; line-height: 1.7; color: #475569; }
+    .dialog-close { float: right; border: 0; background: transparent; color: #64748b; font-size: 26px; line-height: 1; cursor: pointer; }
     .page-content { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
     h1 { border-bottom: 2px solid #dc2626; padding-bottom: 10px; color: #333; }
     .post-list { list-style: none; padding: 0; }
@@ -23,12 +37,13 @@
     .post-date { color: #888; font-size: 14px; margin-top: 7px; }
     .post-summary { color: #475569; line-height: 1.6; margin: 12px 0; }
     .read-more { color: #b91c1c; text-decoration: none; font-weight: 600; }
-    @media (max-width: 650px) { .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
+    @media (max-width: 650px) { .site-header { padding: 28px 16px; } .header-inner { align-items: flex-start; padding-right: 0; padding-top: 52px; } .install-button { top: 0; left: 0; right: auto; padding: 8px 13px; } .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
+      <button id="install-app" class="install-button" type="button" aria-haspopup="dialog"><span aria-hidden="true">⌂</span> 添加到桌面</button>
       <img class="site-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo">
       <div class="header-copy">
         <h1 class="site-title">宝哥彩吧</h1>
@@ -66,7 +81,54 @@
 
     </ul>
   </main>
+  <dialog id="install-dialog" class="install-dialog">
+    <div class="install-dialog-content">
+      <button id="close-install-dialog" class="dialog-close" type="button" aria-label="关闭">×</button>
+      <h2>添加到桌面</h2>
+      <p id="install-help"></p>
+    </div>
+  </dialog>
   <script>
+    let deferredInstallPrompt = null;
+    const installButton = document.getElementById('install-app');
+    const installDialog = document.getElementById('install-dialog');
+    const installHelp = document.getElementById('install-help');
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isWechatBrowser = /MicroMessenger/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+    if (isStandalone) installButton.hidden = true;
+    window.addEventListener('beforeinstallprompt', event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+    });
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      installButton.hidden = true;
+    });
+    installButton.addEventListener('click', async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        return;
+      }
+      installHelp.textContent = isWechatBrowser
+        ? '请先点击右上角“…”并选择“在浏览器打开”，然后再点击“添加到桌面”。'
+        : isIos
+          ? '请点击浏览器底部的“分享”按钮，再选择“添加到主屏幕”。'
+          : '请打开浏览器菜单，选择“安装应用”或“添加到主屏幕”。';
+      if (typeof installDialog.showModal === 'function') installDialog.showModal();
+      else alert(installHelp.textContent);
+    });
+    document.getElementById('close-install-dialog').addEventListener('click', () => installDialog.close());
+    installDialog.addEventListener('click', event => {
+      if (event.target === installDialog) installDialog.close();
+    });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
+    }
+
     document.querySelectorAll('img').forEach(image => {
       if (image.classList.contains('post-cover')) { image.loading = 'lazy'; image.decoding = 'async'; }
       const originalUrl = image.currentSrc || image.src; let retries = 0;
