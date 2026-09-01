@@ -257,28 +257,19 @@ const indexHtml = `<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#b91c1c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="宝哥彩吧">
-  <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./images/site-logo.png">
   <title>宝哥彩吧 - 欢迎转发</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fa; }
     .site-header { color: white; background: linear-gradient(135deg, #991b1b, #dc2626 58%, #ef4444); padding: 42px 20px; }
-    .header-inner { position: relative; max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 20px; padding-right: 168px; }
+    .header-inner { position: relative; max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 20px; }
     .site-logo { width: 92px; height: 92px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,.9); box-shadow: 0 5px 18px rgba(69,10,10,.35); flex: 0 0 auto; }
     .header-copy { min-width: 0; }
     .site-title { margin: 0; font-size: 40px; letter-spacing: 1px; }
     .site-description { margin: 12px 0 0; font-size: 18px; opacity: .86; }
-    .install-button { position: absolute; top: 4px; right: 0; display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; padding: 10px 16px; background: rgba(255,255,255,.16); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(69,10,10,.18); backdrop-filter: blur(5px); }
-    .install-button:hover { background: rgba(255,255,255,.27); }
-    .install-button[hidden] { display: none; }
-    .install-dialog { width: min(420px, calc(100% - 36px)); border: 0; border-radius: 14px; padding: 0; color: #292524; box-shadow: 0 18px 60px rgba(0,0,0,.3); }
-    .install-dialog::backdrop { background: rgba(0,0,0,.55); }
-    .install-dialog-content { padding: 24px; }
-    .install-dialog h2 { margin: 0 0 12px; color: #991b1b; }
-    .install-dialog p { margin: 0; line-height: 1.7; color: #475569; }
-    .dialog-close { float: right; border: 0; background: transparent; color: #64748b; font-size: 26px; line-height: 1; cursor: pointer; }
+    .guide-button { position: fixed; z-index: 1000; top: 30%; right: 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 78px; padding: 13px 8px; border-radius: 12px; background: #b91c1c; color: #fff; font-size: 14px; font-weight: 700; line-height: 1.35; text-align: center; text-decoration: none; box-shadow: 0 6px 20px rgba(127,29,29,.35); }
+    .guide-button:hover { background: #991b1b; transform: translateY(-1px); }
+    .guide-button-icon { font-size: 24px; }
     .page-content { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
     .announcement { display: flex; align-items: flex-start; gap: 14px; margin: 0 0 24px; padding: 16px 18px; border: 1px solid #fecaca; border-left: 5px solid #dc2626; border-radius: 9px; background: #fff7f7; color: #7f1d1d; box-shadow: 0 2px 8px rgba(127,29,29,.05); }
     .announcement-icon { flex: 0 0 auto; font-size: 22px; line-height: 1.35; }
@@ -294,13 +285,12 @@ const indexHtml = `<!DOCTYPE html>
     .post-date { color: #888; font-size: 14px; margin-top: 7px; }
     .post-summary { color: #475569; line-height: 1.6; margin: 12px 0; }
     .read-more { color: #b91c1c; text-decoration: none; font-weight: 600; }
-    @media (max-width: 650px) { .site-header { padding: 28px 16px; } .header-inner { align-items: flex-start; padding-right: 0; padding-top: 52px; } .install-button { top: 0; left: 0; right: auto; padding: 8px 13px; } .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
+    @media (max-width: 650px) { .site-header { padding: 28px 16px; } .header-inner { align-items: flex-start; } .guide-button { top: auto; right: 12px; bottom: 18px; width: auto; flex-direction: row; padding: 10px 14px; border-radius: 999px; } .guide-button-icon { font-size: 20px; } .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <button id="install-app" class="install-button" type="button" aria-haspopup="dialog"><span aria-hidden="true">⌂</span> 添加到桌面</button>
       <img class="site-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo">
       <div class="header-copy">
         <h1 class="site-title">宝哥彩吧</h1>
@@ -308,6 +298,7 @@ const indexHtml = `<!DOCTYPE html>
       </div>
     </div>
   </header>
+  <a class="guide-button" href="./add-to-home-guide.html"><span class="guide-button-icon" aria-hidden="true">📱</span><span>收藏首页指南</span></a>
   <main class="page-content">
     ${announcement.enabled && announcement.content ? `<aside class="announcement" aria-label="${escapeHtml(announcement.title)}">
       <span class="announcement-icon" aria-hidden="true">📢</span>
@@ -318,54 +309,13 @@ const indexHtml = `<!DOCTYPE html>
       ${listItemsHtml}
     </ul>
   </main>
-  <dialog id="install-dialog" class="install-dialog">
-    <div class="install-dialog-content">
-      <button id="close-install-dialog" class="dialog-close" type="button" aria-label="关闭">×</button>
-      <h2>添加到桌面</h2>
-      <p id="install-help"></p>
-    </div>
-  </dialog>
   <script>
-    let deferredInstallPrompt = null;
-    const installButton = document.getElementById('install-app');
-    const installDialog = document.getElementById('install-dialog');
-    const installHelp = document.getElementById('install-help');
-    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isWechatBrowser = /MicroMessenger/i.test(navigator.userAgent);
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-
-    if (isStandalone) installButton.hidden = true;
-    window.addEventListener('beforeinstallprompt', event => {
-      event.preventDefault();
-      deferredInstallPrompt = event;
-    });
-    window.addEventListener('appinstalled', () => {
-      deferredInstallPrompt = null;
-      installButton.hidden = true;
-    });
-    installButton.addEventListener('click', async () => {
-      if (deferredInstallPrompt) {
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice;
-        deferredInstallPrompt = null;
-        return;
-      }
-      installHelp.textContent = isWechatBrowser
-        ? '请先点击右上角“…”并选择“在浏览器打开”，然后再点击“添加到桌面”。'
-        : isIos
-          ? '请点击浏览器底部的“分享”按钮，再选择“添加到主屏幕”。'
-          : '请打开浏览器菜单，选择“安装应用”或“添加到主屏幕”。';
-      if (typeof installDialog.showModal === 'function') installDialog.showModal();
-      else alert(installHelp.textContent);
-    });
-    document.getElementById('close-install-dialog').addEventListener('click', () => installDialog.close());
-    installDialog.addEventListener('click', event => {
-      if (event.target === installDialog) installDialog.close();
-    });
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
+      navigator.serviceWorker.getRegistrations().then(registrations => registrations.forEach(registration => registration.unregister()));
     }
-
+    if ('caches' in window) {
+      caches.keys().then(keys => keys.filter(key => key.startsWith('baoge-home-')).forEach(key => caches.delete(key)));
+    }
     document.querySelectorAll('img').forEach(image => {
       if (image.classList.contains('post-cover')) { image.loading = 'lazy'; image.decoding = 'async'; }
       const originalUrl = image.currentSrc || image.src; let retries = 0;
@@ -381,38 +331,61 @@ const indexHtml = `<!DOCTYPE html>
 
 fs.writeFileSync(path.join(outputDir, 'index.html'), indexHtml);
 
-const manifest = {
-  name: '宝哥彩吧',
-  short_name: '宝哥彩吧',
-  description: '宝哥彩吧首页',
-  start_url: './index.html',
-  scope: './',
-  display: 'standalone',
-  background_color: '#f7f8fa',
-  theme_color: '#b91c1c',
-  icons: [{ src: './images/site-logo.png', sizes: '1254x1254', type: 'image/png', purpose: 'any' }]
-};
-fs.writeFileSync(path.join(outputDir, 'manifest.webmanifest'), JSON.stringify(manifest, null, 2));
-
-const serviceWorker = `const CACHE_NAME = 'baoge-home-v1';
-const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './images/site-logo.png', './images/site-logo.jpg'];
-self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
-  self.skipWaiting();
-});
-self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(fetch(event.request).then(response => {
-    const copy = response.clone();
-    caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-    return response;
-  }).catch(() => caches.match(event.request).then(response => response || caches.match('./index.html'))));
-});`;
-fs.writeFileSync(path.join(outputDir, 'service-worker.js'), serviceWorker);
+const guideHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#b91c1c">
+  <title>添加到主屏幕指南 - 宝哥彩吧</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f7f8fa; color: #292524; font-family: Arial, sans-serif; line-height: 1.7; }
+    .guide-header { padding: 24px 20px; background: linear-gradient(135deg, #991b1b, #dc2626); color: #fff; }
+    .guide-header-inner { max-width: 920px; margin: 0 auto; }
+    .back-home { color: #fff; text-decoration: none; opacity: .9; }
+    .guide-header h1 { margin: 14px 0 6px; font-size: 32px; }
+    .guide-header p { margin: 0; opacity: .9; }
+    main { max-width: 920px; margin: 0 auto; padding: 24px 20px 50px; }
+    .notice { margin-bottom: 22px; padding: 14px 16px; border-left: 5px solid #dc2626; border-radius: 8px; background: #fff1f2; color: #7f1d1d; }
+    .device-nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 10px; padding: 12px 0; background: #f7f8fa; }
+    .device-nav a { flex: 1; padding: 11px; border: 1px solid #fecaca; border-radius: 8px; background: #fff; color: #b91c1c; font-weight: 700; text-align: center; text-decoration: none; }
+    .device-section { scroll-margin-top: 76px; margin-top: 24px; padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 3px 14px rgba(0,0,0,.07); }
+    .device-section h2 { margin: 0 0 8px; color: #991b1b; }
+    .steps { margin: 14px 0 20px; padding-left: 24px; }
+    .steps li { margin: 8px 0; }
+    .guide-image { display: block; width: min(100%, 700px); height: auto; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+    .tip { margin: 16px 0 0; color: #64748b; font-size: 14px; }
+    .home-cta { display: block; width: fit-content; margin: 30px auto 0; padding: 11px 20px; border-radius: 999px; background: #b91c1c; color: #fff; font-weight: 700; text-decoration: none; }
+    @media (max-width: 600px) { .guide-header h1 { font-size: 26px; } main { padding: 16px 12px 36px; } .device-section { padding: 18px 12px; } }
+  </style>
+</head>
+<body>
+  <header class="guide-header"><div class="guide-header-inner">
+    <a class="back-home" href="./index.html">← 返回宝哥彩吧首页</a>
+    <h1>把宝哥彩吧添加到主屏幕</h1>
+    <p>添加成功后，点击手机桌面图标即可直接进入首页。</p>
+  </div></header>
+  <main>
+    <div class="notice"><strong>请注意：</strong>要选择的是“添加到主屏幕”，不需要选择“作为网络应用程序安装”。如果正在微信里打开，请先点右上角“…”并选择“在浏览器打开”。</div>
+    <nav class="device-nav" aria-label="选择手机类型"><a href="#iphone">🍎 苹果手机</a><a href="#android">🤖 安卓手机</a></nav>
+    <section id="iphone" class="device-section">
+      <h2>苹果手机（Safari 浏览器）</h2>
+      <ol class="steps"><li>使用 Safari 打开宝哥彩吧首页，点击底部的分享按钮。</li><li>向下找到并点击“添加到主屏幕”。</li><li>确认名称为“宝哥彩吧”，点击右上角“添加”。</li></ol>
+      <img class="guide-image" src="./images/add-home-ios-guide-v2.png" alt="苹果手机 Safari 添加宝哥彩吧到主屏幕的三步图示">
+      <p class="tip">不同 iOS 版本的按钮位置可能略有区别，但菜单名称都是“添加到主屏幕”。</p>
+    </section>
+    <section id="android" class="device-section">
+      <h2>安卓手机（浏览器）</h2>
+      <ol class="steps"><li>打开宝哥彩吧首页，点击浏览器右上角的“⋮”菜单。</li><li>在菜单中选择“添加到主屏幕”。</li><li>确认名称为“宝哥彩吧”，点击“添加”。</li></ol>
+      <img class="guide-image" src="./images/add-home-android-guide-v2.png" alt="安卓手机添加宝哥彩吧到主屏幕的三步图示">
+      <p class="tip">华为、小米、OPPO、vivo 等浏览器的菜单位置可能稍有不同，请寻找“添加到主屏幕”或“添加至桌面”。</p>
+    </section>
+    <a class="home-cta" href="./index.html">返回首页</a>
+  </main>
+</body>
+</html>`;
+fs.writeFileSync(path.join(outputDir, 'add-to-home-guide.html'), guideHtml);
 
 // Copy uploaded article images into the published site.
 const imagesSource = path.join(__dirname, '../images');
