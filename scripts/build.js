@@ -204,7 +204,10 @@ posts.forEach(post => {
       if (isWechat) return showWechatGuide(target);
       if (navigator.share) {
         try {
-          await navigator.share({ title: shareTitle, text: shareTitle, url: shareUrl });
+          // Sending title/text makes WeChat treat the payload as a plain text
+          // message. Share only the URL so WeChat can fetch the Open Graph
+          // metadata and render its title + description + thumbnail card.
+          await navigator.share({ url: shareUrl });
           return;
         } catch (error) {
           if (error.name === 'AbortError') return;
