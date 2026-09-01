@@ -111,6 +111,9 @@ posts.sort((a, b) => b.publishedTimestamp - a.publishedTimestamp);
 posts.forEach(post => {
   const articleUrl = `${siteUrl}/${encodeURIComponent(post.slug)}.html`;
   const shareImage = absoluteSiteUrl(post.thumbnail) || `${siteUrl}/images/site-logo.png`;
+  const shareImageVersion = post.publishedTimestamp || Date.now();
+  const versionedShareImage = `${shareImage}${shareImage.includes('?') ? '&' : '?'}v=${shareImageVersion}`;
+  const shareImageType = /\.png(?:\?|$)/i.test(shareImage) ? 'image/png' : /\.webp(?:\?|$)/i.test(shareImage) ? 'image/webp' : 'image/jpeg';
   const metaTitle = escapeHtml(post.title);
   const metaDescription = escapeHtml(`作者：${post.author} | ${post.summary}`);
   const detailHtml = `<!DOCTYPE html>
@@ -126,12 +129,15 @@ posts.forEach(post => {
   <meta property="og:description" content="${metaDescription}" />
   <meta property="og:url" content="${articleUrl}" />
   <meta property="og:site_name" content="宝哥彩吧" />
-  <meta property="og:image" content="${escapeHtml(shareImage)}" />
-  <meta property="og:image:secure_url" content="${escapeHtml(shareImage)}" />
+  <link rel="image_src" href="${escapeHtml(versionedShareImage)}" />
+  <meta itemprop="image" content="${escapeHtml(versionedShareImage)}" />
+  <meta property="og:image" content="${escapeHtml(versionedShareImage)}" />
+  <meta property="og:image:secure_url" content="${escapeHtml(versionedShareImage)}" />
+  <meta property="og:image:type" content="${shareImageType}" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${metaTitle}" />
   <meta name="twitter:description" content="${metaDescription}" />
-  <meta name="twitter:image" content="${escapeHtml(shareImage)}" />
+  <meta name="twitter:image" content="${escapeHtml(versionedShareImage)}" />
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #292524; }
     .article-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 3px solid #b91c1c; }
@@ -149,9 +155,11 @@ posts.forEach(post => {
     .wechat-guide.show { display: block; }
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
     .wechat-guide p { max-width: 320px; margin: 16px 0 0 auto; font-size: 18px; line-height: 1.7; }
+    .wechat-share-thumbnail { position: absolute; left: -10000px; top: 0; width: 300px; height: 300px; object-fit: cover; opacity: .01; pointer-events: none; }
   </style>
 </head>
 <body>
+  <img class="wechat-share-thumbnail" src="${escapeHtml(versionedShareImage)}" width="300" height="300" alt="${metaTitle}">
   <header class="article-header">
     <a class="brand" href="./index.html"><img class="brand-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo"><span>宝哥彩吧</span></a>
     <a class="home-link" href="./index.html">← 返回主页</a>
