@@ -142,7 +142,7 @@ posts.forEach(post => {
     .meta { color: #666; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
     .source-tag { background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     img { max-width: 100%; height: auto; }
-    .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 28px 0; padding-top: 18px; border-top: 1px solid #eee; }
+    .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0 18px; padding: 12px 14px; border-radius: 8px; background: #fff7f7; }
     .share-bar a, .share-bar button { border: 0; border-radius: 5px; padding: 8px 12px; background: #f1f5f9; color: #334155; text-decoration: none; cursor: pointer; font-size: 14px; }
     .share-bar a:hover, .share-bar button:hover { background: #fee2e2; color: #b91c1c; }
     .wechat-guide { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.78); color: white; padding: 28px; text-align: right; }
@@ -157,6 +157,12 @@ posts.forEach(post => {
     <a class="home-link" href="./index.html">← 返回主页</a>
   </header>
   <h1>${post.title}</h1>
+  <div class="share-bar">
+    <strong>分享文章：</strong>
+    <button id="share-wechat">微信分享</button>
+    <a id="share-weibo" target="_blank" rel="noopener">微博</a>
+    <button id="copy-link">一键复制链接</button>
+  </div>
   <div class="meta">
     <span>作者：${post.author}</span> | 
     <span>发布时间：${post.date}</span> | 
@@ -164,12 +170,6 @@ posts.forEach(post => {
   </div>
   ${post.detailCover ? `<img class="cover" src="${post.detailCover}" alt="${post.title}">` : ''}
   <div class="content">${post.htmlContent}</div>
-  <div class="share-bar">
-    <strong>分享文章：</strong>
-    <button id="share-wechat">微信分享</button>
-    <a id="share-weibo" target="_blank" rel="noopener">微博</a>
-    <button id="copy-link">一键复制链接</button>
-  </div>
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>
