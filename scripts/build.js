@@ -372,13 +372,13 @@ const guideHtml = `<!DOCTYPE html>
     <section id="iphone" class="device-section">
       <h2>苹果手机（Safari 浏览器）</h2>
       <ol class="steps"><li>使用 Safari 打开宝哥彩吧首页，点击底部的分享按钮。</li><li>向下找到并点击“添加到主屏幕”。</li><li>确认名称为“宝哥彩吧”，点击右上角“添加”。</li></ol>
-      <img class="guide-image" src="./images/add-home-ios-guide-v2.png" alt="苹果手机 Safari 添加宝哥彩吧到主屏幕的三步图示">
+      <img class="guide-image" src="./images/add-home-ios-guide-v3.png" alt="苹果手机 Safari 添加宝哥彩吧到主屏幕的三步图示">
       <p class="tip">不同 iOS 版本的按钮位置可能略有区别，但菜单名称都是“添加到主屏幕”。</p>
     </section>
     <section id="android" class="device-section">
       <h2>安卓手机（浏览器）</h2>
       <ol class="steps"><li>打开宝哥彩吧首页，点击浏览器右上角的“⋮”菜单。</li><li>在菜单中选择“添加到主屏幕”。</li><li>确认名称为“宝哥彩吧”，点击“添加”。</li></ol>
-      <img class="guide-image" src="./images/add-home-android-guide-v2.png" alt="安卓手机添加宝哥彩吧到主屏幕的三步图示">
+      <img class="guide-image" src="./images/add-home-android-guide-v3.png" alt="安卓手机添加宝哥彩吧到主屏幕的三步图示">
       <p class="tip">华为、小米、OPPO、vivo 等浏览器的菜单位置可能稍有不同，请寻找“添加到主屏幕”或“添加至桌面”。</p>
     </section>
     <a class="home-cta" href="./index.html">返回首页</a>
