@@ -27,7 +27,7 @@
     .meta { color: #666; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
     .source-tag { background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
     img { max-width: 100%; height: auto; }
-    .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 28px 0; padding-top: 18px; border-top: 1px solid #eee; }
+    .share-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0 18px; padding: 12px 14px; border-radius: 8px; background: #fff7f7; }
     .share-bar a, .share-bar button { border: 0; border-radius: 5px; padding: 8px 12px; background: #f1f5f9; color: #334155; text-decoration: none; cursor: pointer; font-size: 14px; }
     .share-bar a:hover, .share-bar button:hover { background: #fee2e2; color: #b91c1c; }
     .wechat-guide { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.78); color: white; padding: 28px; text-align: right; }
@@ -42,6 +42,12 @@
     <a class="home-link" href="./index.html">← 返回主页</a>
   </header>
   <h1>宝哥新家开业了，欢迎大家收藏和转发</h1>
+  <div class="share-bar">
+    <strong>分享文章：</strong>
+    <button id="share-wechat">微信分享</button>
+    <a id="share-weibo" target="_blank" rel="noopener">微博</a>
+    <button id="copy-link">一键复制链接</button>
+  </div>
   <div class="meta">
     <span>作者：宝哥</span> | 
     <span>发布时间：2026-08-31 12:39</span> | 
@@ -50,12 +56,6 @@
   
   <div class="content"><p><img loading="lazy" decoding="async" src="./images/1788151235182-Weixin-Image_20260831000528_1893_39.jpg" alt="Weixin Image_20260831000528_1893_39.jpg"><h2>宝哥新家开业了！</h2><div><b>经过美女工程师几天的加班，宝哥的新家终于装修完成，开业了！</b></div><div>在这期间，不少朋友都焦急地问我新家的地址，说看不到宝哥的推荐，生活没有了希望。</div><div>真得非常感谢朋友们多年来对宝哥的支持，宝哥很是感激，唯有更用心地给大家提供赛事分析。</div><div><p>请大家收藏好这个地址，也记得分享给好友，转发到朋友圈，让更多朋友找到我！</p><p>宝哥vx个人号：baoge888100</p></div></p>
 </div>
-  <div class="share-bar">
-    <strong>分享文章：</strong>
-    <button id="share-wechat">微信分享</button>
-    <a id="share-weibo" target="_blank" rel="noopener">微博</a>
-    <button id="copy-link">一键复制链接</button>
-  </div>
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>
