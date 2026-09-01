@@ -3,5 +3,8 @@
     "enabled": true,
     "title": "网站公告",
     "content": "昨天竞火3中3全红！胜负彩和任九均命中头奖！"
+  },
+  "analytics": {
+    "goatcounterCode": "baogecaiba"
   }
 }

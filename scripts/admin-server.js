@@ -60,11 +60,32 @@ function beijingDatePrefix(date) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 }
 
+function siteConfig() {
+  return fs.existsSync(siteConfigFile) ? JSON.parse(fs.readFileSync(siteConfigFile, 'utf8')) : {};
+}
+
+async function articleViews(filename) {
+  const code = siteConfig().analytics?.goatcounterCode;
+  if (!/^[a-z0-9-]+$/.test(code || '')) return null;
+  const slug = filename.replace(/\.md$/, '');
+  const deployedPath = `/888/${encodeURIComponent(slug)}.html`;
+  const counterUrl = `https://${code}.goatcounter.com/counter/${encodeURIComponent(deployedPath)}.json`;
+  try {
+    const response = await fetch(counterUrl, { signal: AbortSignal.timeout(5000) });
+    if (response.status === 404) return 0;
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.count ?? 0;
+  } catch (error) {
+    return null;
+  }
+}
+
 http.createServer(async(req,res)=>{try{
   const url=new URL(req.url,`http://${req.headers.host}`);
   if(req.method==='GET'&&['/','/admin/','/admin/index.html'].includes(url.pathname)){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return fs.createReadStream(adminFile).pipe(res)}
   if(req.method==='GET'&&url.pathname.startsWith('/admin/images/')){const filename=path.basename(decodeURIComponent(url.pathname)),filePath=path.join(imagesDir,filename);if(!fs.existsSync(filePath))return json(res,404,{error:'图片不存在'});res.writeHead(200,{'Cache-Control':'no-store'});return fs.createReadStream(filePath).pipe(res)}
-  if(req.method==='GET'&&url.pathname==='/api/posts'){const posts=fs.readdirSync(postsDir).filter(name=>name.endsWith('.md')).map(filename=>{const parsed=matter(fs.readFileSync(path.join(postsDir,filename),'utf8')),timestamp=parsed.data.date?new Date(parsed.data.date).getTime():0;return{filename,title:parsed.data.title||filename,timestamp:Number.isNaN(timestamp)?0:timestamp}}).sort((a,b)=>b.timestamp-a.timestamp);return json(res,200,posts)}
+  if(req.method==='GET'&&url.pathname==='/api/posts'){const posts=fs.readdirSync(postsDir).filter(name=>name.endsWith('.md')).map(filename=>{const parsed=matter(fs.readFileSync(path.join(postsDir,filename),'utf8')),timestamp=parsed.data.date?new Date(parsed.data.date).getTime():0;return{filename,title:parsed.data.title||filename,timestamp:Number.isNaN(timestamp)?0:timestamp}}).sort((a,b)=>b.timestamp-a.timestamp);const withViews=await Promise.all(posts.map(async post=>({...post,views:await articleViews(post.filename)})));return json(res,200,withViews)}
   if(req.method==='GET'&&url.pathname==='/api/announcement'){const config=fs.existsSync(siteConfigFile)?JSON.parse(fs.readFileSync(siteConfigFile,'utf8')):{};return json(res,200,{enabled:config.announcement?.enabled!==false,title:config.announcement?.title||'网站公告',content:config.announcement?.content||''})}
   if(req.method==='POST'&&url.pathname==='/api/announcement'){const data=await readBody(req),config=fs.existsSync(siteConfigFile)?JSON.parse(fs.readFileSync(siteConfigFile,'utf8')):{};config.announcement={enabled:Boolean(data.enabled),title:String(data.title||'网站公告').trim()||'网站公告',content:String(data.content||'').trim()};fs.writeFileSync(siteConfigFile,JSON.stringify(config,null,2)+'\n','utf8');return json(res,200,config.announcement)}
   if(req.method==='GET'&&url.pathname==='/api/post'){const filename=path.basename(url.searchParams.get('filename')||'');if(!filename.endsWith('.md'))return json(res,400,{error:'文件名无效'});const parsed=matter(fs.readFileSync(path.join(postsDir,filename),'utf8'));const author=!parsed.data.author||parsed.data.author==='baoge'?'宝哥':parsed.data.author;return json(res,200,{...parsed.data,author,bodyHtml:marked.parse(parsed.content.trimStart())})}

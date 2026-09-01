@@ -52,6 +52,9 @@ const announcement = {
   title: String(siteConfig.announcement?.title || '网站公告').trim(),
   content: String(siteConfig.announcement?.content || '').trim()
 };
+const goatcounterCode = /^[a-z0-9-]+$/.test(siteConfig.analytics?.goatcounterCode || '')
+  ? siteConfig.analytics.goatcounterCode
+  : '';
 
 function findFirstImage(content) {
   const markdownImage = content.match(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+["'][^"']*["'])?\s*\)/);
@@ -124,6 +127,7 @@ posts.forEach(post => {
   <title>${metaTitle}</title>
   <!-- 微信分享 / Open Graph 元标签 -->
   <meta property="og:type" content="article" />
+  <link rel="canonical" href="${articleUrl}" />
   <meta property="og:title" content="${metaTitle}" />
   <meta name="description" content="${metaDescription}" />
   <meta property="og:description" content="${metaDescription}" />
@@ -240,6 +244,7 @@ posts.forEach(post => {
       });
     });
   </script>
+  ${goatcounterCode ? `<script data-goatcounter="https://${goatcounterCode}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>` : ''}
 </body>
 </html>`;
 
