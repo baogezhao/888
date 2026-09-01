@@ -5,6 +5,7 @@ const { marked } = require('marked');
 
 const postsDir = path.join(__dirname, '../posts');
 const outputDir = path.join(__dirname, '../dist');
+const siteConfigFile = path.join(__dirname, '../site-config.json');
 const siteUrl = (process.env.SITE_URL || 'https://baogezhao.github.io/888').replace(/\/$/, '');
 
 function escapeHtml(value) {
@@ -37,6 +38,20 @@ if (fs.existsSync(outputDir)) {
   fs.rmSync(outputDir, { recursive: true, force: true });
 }
 fs.mkdirSync(outputDir, { recursive: true });
+
+let siteConfig = {};
+if (fs.existsSync(siteConfigFile)) {
+  try {
+    siteConfig = JSON.parse(fs.readFileSync(siteConfigFile, 'utf8'));
+  } catch (error) {
+    throw new Error(`site-config.json 格式无效：${error.message}`);
+  }
+}
+const announcement = {
+  enabled: siteConfig.announcement?.enabled !== false,
+  title: String(siteConfig.announcement?.title || '网站公告').trim(),
+  content: String(siteConfig.announcement?.content || '').trim()
+};
 
 function findFirstImage(content) {
   const markdownImage = content.match(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+["'][^"']*["'])?\s*\)/);
@@ -265,6 +280,10 @@ const indexHtml = `<!DOCTYPE html>
     .install-dialog p { margin: 0; line-height: 1.7; color: #475569; }
     .dialog-close { float: right; border: 0; background: transparent; color: #64748b; font-size: 26px; line-height: 1; cursor: pointer; }
     .page-content { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
+    .announcement { display: flex; align-items: flex-start; gap: 14px; margin: 0 0 24px; padding: 16px 18px; border: 1px solid #fecaca; border-left: 5px solid #dc2626; border-radius: 9px; background: #fff7f7; color: #7f1d1d; box-shadow: 0 2px 8px rgba(127,29,29,.05); }
+    .announcement-icon { flex: 0 0 auto; font-size: 22px; line-height: 1.35; }
+    .announcement-title { margin: 0 0 4px; font-size: 17px; }
+    .announcement-content { margin: 0; color: #57534e; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
     h1 { border-bottom: 2px solid #dc2626; padding-bottom: 10px; color: #333; }
     .post-list { list-style: none; padding: 0; }
     .post-item { display: grid; grid-template-columns: 240px 1fr; gap: 22px; padding: 20px; margin: 18px 0; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
@@ -290,6 +309,10 @@ const indexHtml = `<!DOCTYPE html>
     </div>
   </header>
   <main class="page-content">
+    ${announcement.enabled && announcement.content ? `<aside class="announcement" aria-label="${escapeHtml(announcement.title)}">
+      <span class="announcement-icon" aria-hidden="true">📢</span>
+      <div><h2 class="announcement-title">${escapeHtml(announcement.title)}</h2><p class="announcement-content">${escapeHtml(announcement.content)}</p></div>
+    </aside>` : ''}
     <h1>最新文章</h1>
     <ul class="post-list">
       ${listItemsHtml}

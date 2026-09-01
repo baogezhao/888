@@ -4,13 +4,13 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>本地文章后台</title>
   <style>
-    :root{font-family:system-ui;color:#1f2937;background:#f3f4f6}*{box-sizing:border-box}body{margin:0}header{background:#111827;color:#fff;padding:14px 22px;display:flex;justify-content:space-between}main{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 52px)}aside{background:#fff;border-right:1px solid #ddd;padding:16px}section{padding:24px;max-width:1000px;width:100%}input,button{font:inherit}input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px}label{display:block;margin-bottom:14px;font-weight:600}label span{display:block;margin-bottom:5px}button{border:0;border-radius:6px;padding:9px 14px;cursor:pointer;background:#2563eb;color:#fff}.secondary{background:#475569}.success{background:#15803d}.danger{background:#b91c1c}.actions,.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.toolbar{padding:8px;background:#e2e8f0;border-radius:7px 7px 0 0}.toolbar button{background:#fff;color:#334155;border:1px solid #cbd5e1;padding:6px 10px}.editor{min-height:360px;padding:18px;background:#fff;border:1px solid #cbd5e1;border-top:0;border-radius:0 0 7px 7px;line-height:1.7;outline:none}.editor:empty:before{content:'在这里写正文……';color:#94a3b8}.editor img{max-width:100%;height:auto}.editor:focus{box-shadow:0 0 0 2px #bfdbfe}#posts{list-style:none;padding:0}#posts button{width:100%;text-align:left;background:transparent;color:#334155;padding:8px}#posts button:hover{background:#eff6ff}#status{min-height:24px;margin-top:12px;color:#475569;white-space:pre-wrap}small{color:#64748b;font-weight:normal}@media(max-width:720px){main{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #ddd}}
+    :root{font-family:system-ui;color:#1f2937;background:#f3f4f6}*{box-sizing:border-box}body{margin:0}header{background:#111827;color:#fff;padding:14px 22px;display:flex;justify-content:space-between}main{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 52px)}aside{background:#fff;border-right:1px solid #ddd;padding:16px}section{padding:24px;max-width:1000px;width:100%}input,textarea,button{font:inherit}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px}textarea{resize:vertical;min-height:130px;line-height:1.6}label{display:block;margin-bottom:14px;font-weight:600}label span{display:block;margin-bottom:5px}button{border:0;border-radius:6px;padding:9px 14px;cursor:pointer;background:#2563eb;color:#fff}.secondary{background:#475569}.success{background:#15803d}.danger{background:#b91c1c}.announcement-entry{width:100%;margin-top:10px;background:#b91c1c}.actions,.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.toolbar{padding:8px;background:#e2e8f0;border-radius:7px 7px 0 0}.toolbar button{background:#fff;color:#334155;border:1px solid #cbd5e1;padding:6px 10px}.editor{min-height:360px;padding:18px;background:#fff;border:1px solid #cbd5e1;border-top:0;border-radius:0 0 7px 7px;line-height:1.7;outline:none}.editor:empty:before{content:'在这里写正文……';color:#94a3b8}.editor img{max-width:100%;height:auto}.editor:focus{box-shadow:0 0 0 2px #bfdbfe}#posts{list-style:none;padding:0}#posts button{width:100%;text-align:left;background:transparent;color:#334155;padding:8px}#posts button:hover{background:#eff6ff}#status{min-height:24px;margin-top:12px;color:#475569;white-space:pre-wrap}small{color:#64748b;font-weight:normal}.announcement-dialog{width:min(560px,calc(100% - 32px));border:0;border-radius:12px;padding:0;box-shadow:0 20px 60px #0005}.announcement-dialog::backdrop{background:#0008}.dialog-content{padding:24px}.dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.dialog-head h2{margin:0}.dialog-close{padding:2px 9px;background:transparent;color:#64748b;font-size:26px}.checkbox{display:flex;align-items:center;gap:8px}.checkbox input{width:auto}.checkbox span{margin:0}@media(max-width:720px){main{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #ddd}}
   </style>
 </head>
 <body>
   <header><strong>本地文章后台</strong><span>所见即所得编辑 · 文件直接保存到代码库</span></header>
   <main>
-    <aside><button id="newPost">＋ 新建文章</button><h3>已有文章</h3><ul id="posts"></ul></aside>
+    <aside><button id="newPost">＋ 新建文章</button><button id="editAnnouncement" class="announcement-entry">📢 编辑首页公告</button><h3>已有文章</h3><ul id="posts"></ul></aside>
     <section>
       <label><span>标题</span><input id="title" placeholder="文章标题"></label>
       <label><span>作者</span><input id="author" value="宝哥"></label>
@@ -31,6 +31,16 @@
       <div id="status"></div>
     </section>
   </main>
+  <dialog id="announcementDialog" class="announcement-dialog">
+    <div class="dialog-content">
+      <div class="dialog-head"><h2>首页公告</h2><button id="closeAnnouncement" class="dialog-close" aria-label="关闭">×</button></div>
+      <label class="checkbox"><input id="announcementEnabled" type="checkbox"><span>在首页显示公告</span></label>
+      <label><span>公告标题</span><input id="announcementTitle" placeholder="网站公告"></label>
+      <label><span>公告内容</span><textarea id="announcementContent" placeholder="请输入公告内容，可换行"></textarea></label>
+      <div class="actions"><button id="saveAnnouncement">保存草稿</button><button id="publishAnnouncement" class="success">保存、Commit 并 Push</button><button id="cancelAnnouncement" class="secondary">取消</button></div>
+      <div id="announcementStatus"></div>
+    </div>
+  </dialog>
   <script>
     const $=id=>document.getElementById(id);let currentFilename='';
     function status(message,error=false){$('status').textContent=message;$('status').style.color=error?'#b91c1c':'#475569'}
@@ -41,8 +51,15 @@
     async function loadPost(filename){try{const post=await api('/api/post?filename='+encodeURIComponent(filename));currentFilename=filename;['title','author','source','summary','thumbnail'].forEach(id=>$(id).value=post[id]||'');$('body').innerHTML=post.bodyHtml||'';$('date').value=post.date?beijingDateTime(post.date):'';status('正在编辑：'+filename)}catch(error){status(error.message,true)}}
     function articleData(){const payload={originalFilename:currentFilename,body:$('body').innerHTML};['title','author','date','source','summary','thumbnail'].forEach(id=>payload[id]=$(id).value);return payload}
     async function savePost(){const result=await api('/api/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(articleData())});currentFilename=result.filename;await loadPosts();return result}
+    async function loadAnnouncement(){const data=await api('/api/announcement');$('announcementEnabled').checked=data.enabled;$('announcementTitle').value=data.title||'网站公告';$('announcementContent').value=data.content||''}
+    async function saveAnnouncement(){return api('/api/announcement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:$('announcementEnabled').checked,title:$('announcementTitle').value,content:$('announcementContent').value})})}
+    function announcementStatus(message,error=false){$('announcementStatus').textContent=message;$('announcementStatus').style.color=error?'#b91c1c':'#475569'}
 
     $('newPost').onclick=resetEditor;
+    $('editAnnouncement').onclick=async()=>{try{announcementStatus('');await loadAnnouncement();$('announcementDialog').showModal()}catch(error){status(error.message,true)}};
+    $('closeAnnouncement').onclick=$('cancelAnnouncement').onclick=()=>$('announcementDialog').close();
+    $('saveAnnouncement').onclick=async()=>{try{announcementStatus('正在保存……');await saveAnnouncement();announcementStatus('公告已保存到本地，尚未发布。')}catch(error){announcementStatus(error.message,true)}};
+    $('publishAnnouncement').onclick=async()=>{const message=prompt('Commit 信息','更新首页公告');if(!message)return;try{announcementStatus('正在保存并发布……');await saveAnnouncement();const result=await api('/api/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message})});announcementStatus(result.message)}catch(error){announcementStatus(error.message,true)}};
     document.querySelectorAll('[data-cmd]').forEach(button=>button.onclick=()=>{document.execCommand(button.dataset.cmd,false,button.dataset.value||null);$('body').focus()});
     $('addLink').onclick=()=>{const url=prompt('链接地址','https://');if(url)document.execCommand('createLink',false,url)};
     $('save').onclick=async()=>{try{status('正在保存……');const result=await savePost();status('已保存到 posts/'+result.filename+'，尚未发布。')}catch(error){status(error.message,true)}};
