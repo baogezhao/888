@@ -5,6 +5,25 @@ const { marked } = require('marked');
 
 const postsDir = path.join(__dirname, '../posts');
 const outputDir = path.join(__dirname, '../dist');
+const siteUrl = (process.env.SITE_URL || 'https://baogezhao.github.io/888').replace(/\/$/, '');
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function absoluteSiteUrl(value) {
+  if (!value) return '';
+  try {
+    return new URL(value, `${siteUrl}/`).href;
+  } catch (error) {
+    return '';
+  }
+}
 
 // Git does not track empty directories, so `posts` may not exist in a fresh
 // checkout before the first article is published.
@@ -75,18 +94,29 @@ posts.sort((a, b) => b.publishedTimestamp - a.publishedTimestamp);
 
 // 2. 生成文章详情页
 posts.forEach(post => {
+  const articleUrl = `${siteUrl}/${encodeURIComponent(post.slug)}.html`;
+  const shareImage = absoluteSiteUrl(post.thumbnail) || `${siteUrl}/images/site-logo.png`;
+  const metaTitle = escapeHtml(post.title);
+  const metaDescription = escapeHtml(`作者：${post.author} | ${post.summary}`);
   const detailHtml = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${post.title}</title>
+  <title>${metaTitle}</title>
   <!-- 微信分享 / Open Graph 元标签 -->
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="${post.title}" />
-  <meta name="description" content="作者：${post.author} | ${post.summary}" />
-  <meta property="og:description" content="作者：${post.author} | ${post.summary}" />
-  <meta property="og:image" content="${post.thumbnail}" />
+  <meta property="og:title" content="${metaTitle}" />
+  <meta name="description" content="${metaDescription}" />
+  <meta property="og:description" content="${metaDescription}" />
+  <meta property="og:url" content="${articleUrl}" />
+  <meta property="og:site_name" content="宝哥彩吧" />
+  <meta property="og:image" content="${escapeHtml(shareImage)}" />
+  <meta property="og:image:secure_url" content="${escapeHtml(shareImage)}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${metaTitle}" />
+  <meta name="twitter:description" content="${metaDescription}" />
+  <meta name="twitter:image" content="${escapeHtml(shareImage)}" />
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #292524; }
     .article-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 3px solid #b91c1c; }
