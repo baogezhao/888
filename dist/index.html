@@ -17,11 +17,19 @@
     .guide-button { position: fixed; z-index: 1000; top: 30%; right: 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 78px; padding: 13px 8px; border-radius: 12px; background: #b91c1c; color: #fff; font-size: 14px; font-weight: 700; line-height: 1.35; text-align: center; text-decoration: none; box-shadow: 0 6px 20px rgba(127,29,29,.35); }
     .guide-button:hover { background: #991b1b; transform: translateY(-1px); }
     .guide-button-icon { font-size: 24px; }
+    .pull-refresh { position: fixed; z-index: 1200; top: 0; left: 50%; min-width: 130px; padding: 9px 14px; border-radius: 0 0 999px 999px; background: #fff; color: #991b1b; font-size: 14px; font-weight: 700; text-align: center; box-shadow: 0 3px 12px rgba(0,0,0,.14); transform: translate(-50%, -110%); transition: transform .18s ease; pointer-events: none; }
+    .pull-refresh.visible { transition: none; }
     .page-content { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
     .announcement { display: flex; align-items: flex-start; gap: 14px; margin: 0 0 24px; padding: 16px 18px; border: 1px solid #fecaca; border-left: 5px solid #dc2626; border-radius: 9px; background: #fff7f7; color: #7f1d1d; box-shadow: 0 2px 8px rgba(127,29,29,.05); }
     .announcement-icon { flex: 0 0 auto; font-size: 22px; line-height: 1.35; }
     .announcement-title { margin: 0 0 4px; font-size: 17px; }
     .announcement-content { margin: 0; color: #57534e; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .app-download { display: grid; grid-template-columns: 126px 1fr; gap: 20px; align-items: center; margin: 0 0 24px; padding: 18px; border-radius: 12px; background: #fff; box-shadow: 0 3px 14px rgba(0,0,0,.07); }
+    .app-qr { display: block; width: 126px; height: 126px; padding: 6px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
+    .app-download h2 { margin: 0 0 6px; color: #991b1b; font-size: 21px; }
+    .app-download p { margin: 5px 0; color: #57534e; line-height: 1.55; }
+    .app-download-button { display: inline-block; margin-top: 8px; padding: 9px 16px; border-radius: 999px; background: #b91c1c; color: #fff; font-weight: 700; text-decoration: none; }
+    .app-download-tip { font-size: 13px; color: #64748b !important; }
     h1 { border-bottom: 2px solid #dc2626; padding-bottom: 10px; color: #333; }
     .post-list { list-style: none; padding: 0; }
     .post-item { display: grid; grid-template-columns: 240px 1fr; gap: 22px; padding: 20px; margin: 18px 0; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
@@ -32,10 +40,11 @@
     .post-date { color: #888; font-size: 14px; margin-top: 7px; }
     .post-summary { color: #475569; line-height: 1.6; margin: 12px 0; }
     .read-more { color: #b91c1c; text-decoration: none; font-weight: 600; }
-    @media (max-width: 650px) { .site-header { padding: 28px 16px; } .header-inner { align-items: flex-start; } .guide-button { top: auto; right: 12px; bottom: 18px; width: auto; flex-direction: row; padding: 10px 14px; border-radius: 999px; } .guide-button-icon { font-size: 20px; } .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
+    @media (max-width: 650px) { .site-header { padding: 28px 16px; } .header-inner { align-items: flex-start; } .guide-button { top: auto; right: 12px; bottom: 18px; width: auto; flex-direction: row; padding: 10px 14px; border-radius: 999px; } .guide-button-icon { font-size: 20px; } .app-download { grid-template-columns: 92px 1fr; gap: 13px; padding: 14px; } .app-qr { width: 92px; height: 92px; } .app-download h2 { font-size: 18px; } .app-download p { font-size: 14px; } .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
   </style>
 </head>
 <body>
+  <div id="pull-refresh" class="pull-refresh" role="status" aria-live="polite">↓ 下拉刷新</div>
   <header class="site-header">
     <div class="header-inner">
       <img class="site-logo" src="./images/site-logo.jpg" alt="宝哥博客 Logo">
@@ -51,9 +60,42 @@
       <span class="announcement-icon" aria-hidden="true">📢</span>
       <div><h2 class="announcement-title">网站公告</h2><p class="announcement-content">昨天竞火3中3全红！胜负彩和任九均命中头奖！</p></div>
     </aside>
+    <section class="app-download" aria-labelledby="android-app-title">
+      <img class="app-qr" src="./images/android-app-download-qr.svg" alt="宝哥彩吧安卓 App 下载二维码">
+      <div>
+        <h2 id="android-app-title">安卓 App 下载</h2>
+        <p>安卓手机扫码下载安装，打开 App 即可直达宝哥彩吧。</p>
+        <a class="app-download-button" href="./downloads/baogecaiba.apk" download>直接下载 APK</a>
+        <p class="app-download-tip">微信内请先选择“在浏览器打开”；首次安装需允许浏览器安装未知应用。</p>
+      </div>
+    </section>
     <h1>最新文章</h1>
     <ul class="post-list">
       
+  <li class="post-item">
+    <a href="./2026-09-03-宝哥彩吧-头条-昨晚巴西杯打出比分-今晚皇家社会送对手3连败.html" target="_blank" rel="noopener" class="post-cover-link">
+      <img class="post-cover" src="./images/1788407106014-1-udinese.jpg" alt="【宝哥彩吧】头条：昨晚巴西杯打出比分，今晚皇家社会送对手3连败？">
+    </a>
+    <div class="post-info">
+      <a href="./2026-09-03-宝哥彩吧-头条-昨晚巴西杯打出比分-今晚皇家社会送对手3连败.html" target="_blank" rel="noopener" class="post-title">【宝哥彩吧】头条：昨晚巴西杯打出比分，今晚皇家社会送对手3连败？</a>
+      <div class="post-date">2026-09-03 11:35 · 宝哥</div>
+      <p class="post-summary">昨晚竞火3中2再次打出比分！弗拉门戈2-0完胜米拉索。今晚关注法甲西甲巴西杯等赛事，竞盘火线继续约~~~</p>
+      <a href="./2026-09-03-宝哥彩吧-头条-昨晚巴西杯打出比分-今晚皇家社会送对手3连败.html" target="_blank" rel="noopener" class="read-more">阅读全文 →</a>
+    </div>
+  </li>
+
+  <li class="post-item">
+    <a href="./2026-09-02-宝哥彩吧-头条-都灵主场输球杯赛输球-昨天竞火3中2打出比分-今天英冠再有好胆-继续约.html" target="_blank" rel="noopener" class="post-cover-link">
+      <img class="post-cover" src="./images/1788318583247-1-sheffield-united.jpg" alt="【宝哥彩吧】头条：都灵主场输球杯赛出局，昨天竞火3中2打出比分！今天英冠继续约">
+    </a>
+    <div class="post-info">
+      <a href="./2026-09-02-宝哥彩吧-头条-都灵主场输球杯赛输球-昨天竞火3中2打出比分-今天英冠再有好胆-继续约.html" target="_blank" rel="noopener" class="post-title">【宝哥彩吧】头条：都灵主场输球杯赛出局，昨天竞火3中2打出比分！今天英冠继续约</a>
+      <div class="post-date">2026-09-02 09:15 · 宝哥</div>
+      <p class="post-summary">意大利杯都灵主场输球遭淘汰，昨天竞火3中2打出比分！今天继续约</p>
+      <a href="./2026-09-02-宝哥彩吧-头条-都灵主场输球杯赛输球-昨天竞火3中2打出比分-今天英冠再有好胆-继续约.html" target="_blank" rel="noopener" class="read-more">阅读全文 →</a>
+    </div>
+  </li>
+
   <li class="post-item">
     <a href="./2026-09-01-宝哥彩吧-还没有收藏宝哥新网站-看这儿.html" target="_blank" rel="noopener" class="post-cover-link">
       <img class="post-cover" src="./images/1788266313754-Weixin-Image_20260831000528_1893_39.jpg" alt="【宝哥彩吧】还没有收藏宝哥新网站？看这儿！">
@@ -110,6 +152,41 @@
     }
     if ('caches' in window) {
       caches.keys().then(keys => keys.filter(key => key.startsWith('baoge-home-')).forEach(key => caches.delete(key)));
+    }
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    if (isStandalone && 'ontouchstart' in window) {
+      const refreshIndicator = document.getElementById('pull-refresh');
+      let pullStart = 0;
+      let pullDistance = 0;
+      let trackingPull = false;
+      document.addEventListener('touchstart', event => {
+        if (window.scrollY === 0 && event.touches.length === 1) {
+          pullStart = event.touches[0].clientY;
+          pullDistance = 0;
+          trackingPull = true;
+        }
+      }, { passive: true });
+      document.addEventListener('touchmove', event => {
+        if (!trackingPull) return;
+        pullDistance = Math.max(0, Math.min(110, (event.touches[0].clientY - pullStart) * .65));
+        if (pullDistance <= 0) return;
+        event.preventDefault();
+        refreshIndicator.classList.add('visible');
+        refreshIndicator.style.transform = 'translate(-50%, ' + (pullDistance - 42) + 'px)';
+        refreshIndicator.textContent = pullDistance >= 72 ? '↑ 松开刷新' : '↓ 下拉刷新';
+      }, { passive: false });
+      document.addEventListener('touchend', () => {
+        if (!trackingPull) return;
+        trackingPull = false;
+        if (pullDistance >= 72) {
+          refreshIndicator.textContent = '⟳ 正在刷新…';
+          refreshIndicator.style.transform = 'translate(-50%, 0)';
+          window.location.reload();
+          return;
+        }
+        refreshIndicator.classList.remove('visible');
+        refreshIndicator.style.transform = 'translate(-50%, -110%)';
+      }, { passive: true });
     }
     document.querySelectorAll('img').forEach(image => {
       if (image.classList.contains('post-cover')) { image.loading = 'lazy'; image.decoding = 'async'; }

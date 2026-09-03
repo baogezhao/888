@@ -1,0 +1,16 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.baogecaiba.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.baogecaiba.app'
+        minSdk 24
+        targetSdk 35
+        versionCode project.hasProperty('versionCode') ? project.property('versionCode').toInteger() : 1
+        versionName '1.0.0'
+    }
+}
