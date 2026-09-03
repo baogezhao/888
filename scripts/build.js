@@ -330,7 +330,7 @@ const indexHtml = `<!DOCTYPE html>
       <div><h2 class="announcement-title">${escapeHtml(announcement.title)}</h2><p class="announcement-content">${escapeHtml(announcement.content)}</p></div>
     </aside>` : ''}
     <section class="app-download" aria-labelledby="android-app-title">
-      <img class="app-qr" src="./images/android-app-download-qr.svg" alt="宝哥彩吧安卓 App 下载二维码">
+      <img class="app-qr" src="./images/android-app-download-qr.png" alt="宝哥彩吧安卓 App 下载二维码">
       <div>
         <h2 id="android-app-title">安卓 App 下载</h2>
         <p>安卓手机扫码下载安装，打开 App 即可直达宝哥彩吧。</p>
