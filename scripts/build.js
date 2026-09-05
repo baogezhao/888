@@ -124,6 +124,8 @@ posts.forEach(post => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="./images/site-logo.png">
+  <link rel="apple-touch-icon" href="./images/site-logo.png">
   <title>${metaTitle}</title>
   <!-- 微信分享 / Open Graph 元标签 -->
   <meta property="og:type" content="article" />
@@ -273,6 +275,7 @@ const indexHtml = `<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#b91c1c">
+  <link rel="icon" type="image/png" href="./images/site-logo.png">
   <link rel="apple-touch-icon" href="./images/site-logo.png">
   <title>宝哥彩吧 - 欢迎转发</title>
   <style>
