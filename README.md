@@ -238,6 +238,24 @@ https://baogezhao.github.io/888/
 
 安卓 App 已接入 Firebase Cloud Messaging，并会自动订阅 `all_users` 主题。首次打开新版 App 时，Android 13 及以上系统会询问是否允许通知。
 
+### 配置发送凭据
+
+`google-services.json` 只供 App 接收消息，自动和手动发送还需要 Firebase 服务账号：
+
+1. 打开 Firebase 控制台的“项目设置 → 服务账号”。
+2. 点击“生成新的私钥”，下载服务账号 JSON。
+3. 打开 GitHub 仓库的“Settings → Secrets and variables → Actions”。
+4. 新建 Repository secret，名称填写 `FIREBASE_SERVICE_ACCOUNT`，值粘贴服务账号 JSON 的完整内容。
+5. 不要把服务账号 JSON 文件提交到 GitHub。
+
+### 自动推送
+
+发布文章并且网站部署成功后，`Send Article Notification` 工作流会检测本次新增或修改的 Markdown 文章，并把最新一篇自动推送给 `all_users`。只有程序代码变化而没有文章变化时会自动跳过。
+
+### 手动推送
+
+打开 GitHub 仓库的“Actions → Send Article Notification → Run workflow”，填写通知标题、正文和可选的网址即可发送。
+
 在 Firebase 控制台的 Messaging 页面创建通知时：
 
 - 目标选择主题 `all_users`，可向所有已安装并允许通知的用户发送。

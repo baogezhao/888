@@ -1,0 +1,59 @@
+name: Send Article Notification
+
+on:
+  workflow_run:
+    workflows:
+      - Build and Deploy to GitHub Pages
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 通知标题
+        required: true
+        type: string
+      body:
+        description: 通知正文
+        required: true
+        type: string
+      url:
+        description: 点击通知后打开的网址（留空则打开首页）
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send automatic article notification
+        if: github.event_name == 'workflow_run'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/send-push.js --mode automatic --before "${{ github.event.workflow_run.head_sha }}^" --after "${{ github.event.workflow_run.head_sha }}"
+
+      - name: Send manual notification
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PUSH_TITLE: ${{ inputs.title }}
+          PUSH_BODY: ${{ inputs.body }}
+          PUSH_URL: ${{ inputs.url }}
+        run: node scripts/send-push.js --mode manual --title "$PUSH_TITLE" --body "$PUSH_BODY" --url "$PUSH_URL"
