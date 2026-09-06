@@ -78,26 +78,34 @@ function automaticMessage() {
   try {
     const isInitialPush = !before || /^0+$/.test(before);
     const args = isInitialPush
-      ? ['-c', 'core.quotepath=false', 'show', '--pretty=', '--name-only', '--diff-filter=AM', after, '--', 'posts/*.md']
-      : ['-c', 'core.quotepath=false', 'diff', '--name-only', '--diff-filter=AM', before, after, '--', 'posts/*.md'];
+      ? ['-c', 'core.quotepath=false', 'show', '--pretty=', '--name-only', '--diff-filter=AM', after, '--', 'posts/*.md', 'notifications/manual.json']
+      : ['-c', 'core.quotepath=false', 'diff', '--name-only', '--diff-filter=AM', before, after, '--', 'posts/*.md', 'notifications/manual.json'];
     changedFiles = execFileSync('git', args, { encoding: 'utf8' }).split(/\r?\n/).filter(Boolean);
   } catch (error) {
     throw new Error('无法检测本次更新的文章文件');
+  }
+  if (changedFiles.includes('notifications/manual.json')) {
+    const request = JSON.parse(fs.readFileSync(path.resolve('notifications/manual.json'), 'utf8'));
+    return validatedManualMessage(request.title, request.body, request.url);
   }
   const articles = changedFiles.map(articleFromFile).filter(Boolean).sort((a, b) => b.timestamp - a.timestamp);
   return articles[0] || null;
 }
 
-function manualMessage() {
-  const title = cleanText(argument('title'));
-  const body = cleanText(argument('body'));
-  const url = argument('url').trim() || `${SITE_URL}/`;
+function validatedManualMessage(rawTitle, rawBody, rawUrl) {
+  const title = cleanText(rawTitle);
+  const body = cleanText(rawBody);
+  const url = String(rawUrl || '').trim() || `${SITE_URL}/`;
   if (!title || !body) throw new Error('手动推送必须填写标题和正文');
   const parsedUrl = new URL(url);
   if (parsedUrl.origin + parsedUrl.pathname.substring(0, 5) !== `${SITE_URL}/`) {
     throw new Error('推送链接必须是宝哥彩吧网站地址');
   }
   return { title: title.slice(0, 100), body: body.slice(0, 200), url };
+}
+
+function manualMessage() {
+  return validatedManualMessage(argument('title'), argument('body'), argument('url'));
 }
 
 async function send(message) {
