@@ -26,6 +26,10 @@ function absoluteSiteUrl(value) {
   }
 }
 
+function safeJsonLd(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
 // Git does not track empty directories, so `posts` may not exist in a fresh
 // checkout before the first article is published.
 if (!fs.existsSync(postsDir)) {
@@ -97,6 +101,7 @@ const posts = files.map(filename => {
     title: data.title || '无标题',
     author: !data.author || data.author === 'baoge' ? '宝哥' : data.author,
     date: publishedTimestamp ? formatPublishTime(publishedAt) : '',
+    publishedIso: publishedTimestamp ? publishedAt.toISOString() : '',
     publishedTimestamp,
     source: data.source || '本站',
     // Prefer an explicitly selected cover, otherwise use the first body image.
@@ -119,6 +124,23 @@ posts.forEach(post => {
   const shareImageType = /\.png(?:\?|$)/i.test(shareImage) ? 'image/png' : /\.webp(?:\?|$)/i.test(shareImage) ? 'image/webp' : 'image/jpeg';
   const metaTitle = escapeHtml(post.title);
   const metaDescription = escapeHtml(`作者：${post.author} | ${post.summary}`);
+  const articleJsonLd = safeJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: `作者：${post.author} | ${post.summary}`,
+    image: [shareImage],
+    datePublished: post.publishedIso || undefined,
+    dateModified: post.publishedIso || undefined,
+    author: { '@type': 'Person', name: post.author, url: siteUrl },
+    publisher: {
+      '@type': 'Organization',
+      name: '宝哥彩吧',
+      url: siteUrl,
+      logo: { '@type': 'ImageObject', url: `${siteUrl}/images/site-logo.png` }
+    },
+    mainEntityOfPage: articleUrl
+  });
   const detailHtml = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -144,6 +166,7 @@ posts.forEach(post => {
   <meta name="twitter:title" content="${metaTitle}" />
   <meta name="twitter:description" content="${metaDescription}" />
   <meta name="twitter:image" content="${escapeHtml(versionedShareImage)}" />
+  <script type="application/ld+json">${articleJsonLd}</script>
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #292524; }
     .article-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 3px solid #b91c1c; }
@@ -269,15 +292,44 @@ const listItemsHtml = recentPosts.map(p => `
   </li>
 `).join('');
 
+const homeDescription = '宝哥彩吧官方网站。宝哥是知名足彩专家、前腾讯彩票和《足彩310》主编、足彩五要素创始人，持续分享赛事分析与复盘。';
+const homeJsonLd = safeJsonLd({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      url: `${siteUrl}/`,
+      name: '宝哥彩吧',
+      alternateName: ['宝哥', '宝哥足彩'],
+      description: homeDescription,
+      inLanguage: 'zh-CN'
+    },
+    {
+      '@type': 'Person',
+      '@id': `${siteUrl}/#baoge`,
+      name: '宝哥',
+      alternateName: '宝哥彩吧',
+      url: `${siteUrl}/`,
+      image: `${siteUrl}/images/site-logo.png`,
+      jobTitle: '足彩专家',
+      description: '前腾讯彩票和《足彩310》主编，足彩五要素创始人。'
+    }
+  ]
+});
+
 const indexHtml = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#b91c1c">
+  <meta name="description" content="${escapeHtml(homeDescription)}">
+  <link rel="canonical" href="${siteUrl}/">
   <link rel="icon" type="image/png" href="./images/site-logo.png">
   <link rel="apple-touch-icon" href="./images/site-logo.png">
-  <title>宝哥彩吧 - 欢迎转发</title>
+  <title>宝哥彩吧官方网站｜宝哥足彩分析与赛事复盘</title>
+  <script type="application/ld+json">${homeJsonLd}</script>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fa; }
     .site-header { color: white; background: linear-gradient(135deg, #991b1b, #dc2626 58%, #ef4444); padding: 42px 20px; }
@@ -312,6 +364,7 @@ const indexHtml = `<!DOCTYPE html>
     .post-date { color: #888; font-size: 14px; margin-top: 7px; }
     .post-summary { color: #475569; line-height: 1.6; margin: 12px 0; }
     .read-more { color: #b91c1c; text-decoration: none; font-weight: 600; }
+    .archive-link { display: block; width: fit-content; margin: 24px auto 8px; padding: 10px 18px; border: 1px solid #b91c1c; border-radius: 999px; color: #b91c1c; font-weight: 700; text-decoration: none; }
     @media (max-width: 650px) { .site-header { padding: 28px 16px; } .header-inner { align-items: flex-start; } .guide-button { top: auto; right: 12px; bottom: 18px; width: auto; flex-direction: row; padding: 10px 14px; border-radius: 999px; } .guide-button-icon { font-size: 20px; } .app-download { grid-template-columns: 92px 1fr; gap: 13px; padding: 14px; } .app-qr { width: 92px; height: 92px; } .app-download h2 { font-size: 18px; } .app-download p { font-size: 14px; } .post-item { grid-template-columns: 1fr; } .post-cover { height: 200px; } .site-logo { width: 70px; height: 70px; } .site-title { font-size: 30px; } }
   </style>
 </head>
@@ -345,6 +398,7 @@ const indexHtml = `<!DOCTYPE html>
     <ul class="post-list">
       ${listItemsHtml}
     </ul>
+    <a class="archive-link" href="./archive.html">查看全部 ${posts.length} 篇文章 →</a>
   </main>
   <script>
     if ('serviceWorker' in navigator) {
@@ -402,6 +456,51 @@ const indexHtml = `<!DOCTYPE html>
 </html>`;
 
 fs.writeFileSync(path.join(outputDir, 'index.html'), indexHtml);
+
+const archiveItemsHtml = posts.map(post => `
+      <li><a href="./${post.slug}.html">${escapeHtml(post.title)}</a><time>${escapeHtml(post.date)}</time></li>
+`).join('');
+const archiveHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="宝哥彩吧全部文章归档，收录宝哥的足彩赛事分析与复盘。">
+  <link rel="canonical" href="${siteUrl}/archive.html">
+  <link rel="icon" type="image/png" href="./images/site-logo.png">
+  <title>全部文章｜宝哥彩吧</title>
+  <style>
+    body { max-width: 900px; margin: 0 auto; padding: 24px 18px 50px; background: #f7f8fa; color: #292524; font-family: Arial, sans-serif; }
+    .back { color: #b91c1c; text-decoration: none; }
+    h1 { margin-top: 26px; padding-bottom: 12px; border-bottom: 3px solid #b91c1c; }
+    ul { padding: 0; list-style: none; }
+    li { display: flex; justify-content: space-between; gap: 18px; margin: 12px 0; padding: 16px 18px; border-radius: 8px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+    li a { color: #991b1b; font-weight: 700; line-height: 1.5; text-decoration: none; }
+    time { flex: 0 0 auto; color: #64748b; font-size: 14px; }
+    @media (max-width: 600px) { li { flex-direction: column; gap: 7px; } }
+  </style>
+</head>
+<body>
+  <a class="back" href="./index.html">← 返回宝哥彩吧首页</a>
+  <main><h1>全部文章</h1><p>共 ${posts.length} 篇，按发布时间由新到旧排列。</p><ul>${archiveItemsHtml}</ul></main>
+</body>
+</html>`;
+fs.writeFileSync(path.join(outputDir, 'archive.html'), archiveHtml);
+
+const sitemapEntries = [
+  { url: `${siteUrl}/`, lastmod: posts[0]?.publishedIso },
+  { url: `${siteUrl}/archive.html`, lastmod: posts[0]?.publishedIso },
+  ...posts.map(post => ({
+    url: `${siteUrl}/${encodeURIComponent(post.slug)}.html`,
+    lastmod: post.publishedIso
+  }))
+];
+const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapEntries.map(entry => `  <url><loc>${escapeHtml(entry.url)}</loc>${entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : ''}</url>`).join('\n')}
+</urlset>\n`;
+fs.writeFileSync(path.join(outputDir, 'sitemap.xml'), sitemapXml);
+fs.writeFileSync(path.join(outputDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`);
 
 const guideHtml = `<!DOCTYPE html>
 <html lang="zh-CN">

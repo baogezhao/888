@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "901407342407",
+    "project_id": "baogecaiba",
+    "storage_bucket": "baogecaiba.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:901407342407:android:8d08b3a27d09dc2dec1662",
+        "android_client_info": {
+          "package_name": "com.baogecaiba.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqxBJpY9Q7xBIZcXR9z8sgyc5nCw0EvlI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

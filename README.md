@@ -234,6 +234,19 @@ https://baogezhao.github.io/888/
 
 可以在 GitHub 仓库的 **Actions** 页面查看构建状态和错误日志。
 
+## 安卓 App 消息推送
+
+安卓 App 已接入 Firebase Cloud Messaging，并会自动订阅 `all_users` 主题。首次打开新版 App 时，Android 13 及以上系统会询问是否允许通知。
+
+在 Firebase 控制台的 Messaging 页面创建通知时：
+
+- 目标选择主题 `all_users`，可向所有已安装并允许通知的用户发送。
+- 通知标题建议填写文章标题，正文填写一句简短摘要。
+- 如需点击通知直达文章，在“自定义数据”中添加键 `url`，值填写完整文章网址，例如 `https://baogezhao.github.io/888/文章文件名.html`。
+- App 仅允许通知打开 `https://baogezhao.github.io/888/` 下的网址，其他地址会安全地返回首页。
+
+`google-services.json` 必须位于 `android-app/app/google-services.json`。每次 Firebase 配置变化或 App 推送代码更新后，都需要重新构建并安装新版 APK。
+
 ## 测试文章
 
 仓库包含一篇用于检查网站结构的测试文章：
