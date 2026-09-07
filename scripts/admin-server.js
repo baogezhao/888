@@ -175,6 +175,15 @@ async function textToExcel(data) {
       }
     }
   }
+  if (worksheet.columnCount) {
+    worksheet.getColumn(1).eachCell({ includeEmpty: true }, cell => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { theme: 9, tint: 0.6 }
+      };
+    });
+  }
   worksheet.columns.forEach(column => {
     let width = 10;
     column.eachCell({ includeEmpty: false }, cell => { width = Math.max(width, Math.min(50, String(cell.value || '').length + 2)); });
