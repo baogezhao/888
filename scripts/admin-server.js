@@ -192,7 +192,8 @@ async function textToExcel(data) {
   for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber += 1) {
     for (let columnNumber = 1; columnNumber <= worksheet.columnCount; columnNumber += 1) {
       const cell = worksheet.getCell(rowNumber, columnNumber);
-      cell.font = { ...cell.font, size: 10 };
+      cell.font = { ...cell.font, name: '宋体', size: 10 };
+      cell.alignment = { ...cell.alignment, horizontal: 'center', vertical: 'middle' };
     }
   }
   worksheet.columns.forEach(column => {
