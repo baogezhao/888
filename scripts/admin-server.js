@@ -150,6 +150,16 @@ async function textToExcel(data) {
     header.alignment = { vertical: 'middle' };
     worksheet.views = [{ state: 'frozen', ySplit: 1 }];
     if (worksheet.columnCount) worksheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: worksheet.columnCount } };
+
+    const handicapColumn = rows[0].findIndex(value => String(value).trim() === '盘路') + 1;
+    if (handicapColumn > 0) {
+      for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+        const cell = worksheet.getCell(rowNumber, handicapColumn);
+        const value = String(cell.value ?? '').trim();
+        if (value === '赢') cell.font = { ...cell.font, color: { argb: 'FFFF0000' } };
+        if (value === '输') cell.font = { ...cell.font, color: { argb: 'FF0000FF' } };
+      }
+    }
   }
   worksheet.columns.forEach(column => {
     let width = 10;
