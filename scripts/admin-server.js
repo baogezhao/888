@@ -2,6 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
+const dns = require('dns').promises;
+const net = require('net');
 const matter = require('gray-matter');
 const { marked } = require('marked');
 
@@ -19,6 +21,56 @@ fs.mkdirSync(notificationsDir, { recursive: true });
 function json(res, status, value) { res.writeHead(status, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}); res.end(JSON.stringify(value)); }
 function safeName(value, fallback) { const cleaned=String(value||'').normalize('NFKC').replace(/[^\p{L}\p{N}._-]+/gu,'-').replace(/^-+|-+$/g,''); return cleaned||fallback; }
 function readBody(req) { return new Promise((resolve,reject)=>{ let body=''; req.on('data',chunk=>{body+=chunk;if(body.length>20*1024*1024)req.destroy(new Error('请求内容超过 20MB'))}); req.on('end',()=>{try{resolve(body?JSON.parse(body):{})}catch{reject(new Error('请求格式无效'))}});req.on('error',reject); }); }
+
+function isPrivateAddress(address) {
+  if (net.isIPv4(address)) {
+    const parts = address.split('.').map(Number);
+    return parts[0] === 0 || parts[0] === 10 || parts[0] === 127 || parts[0] >= 224
+      || (parts[0] === 169 && parts[1] === 254)
+      || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)
+      || (parts[0] === 192 && parts[1] === 168);
+  }
+  if (net.isIPv6(address)) {
+    const normalized = address.toLowerCase();
+    return normalized === '::1' || normalized === '::' || normalized.startsWith('fc')
+      || normalized.startsWith('fd') || /^fe[89ab]/.test(normalized);
+  }
+  return true;
+}
+
+async function assertPublicImageUrl(value) {
+  const url = new URL(value);
+  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('只支持 http 或 https 图片地址');
+  const addresses = await dns.lookup(url.hostname, { all: true });
+  if (!addresses.length || addresses.some(item => isPrivateAddress(item.address))) throw new Error('不允许访问本机或内网图片地址');
+  return url;
+}
+
+async function downloadRemoteImage(value) {
+  let currentUrl = String(value || '');
+  for (let redirects = 0; redirects <= 3; redirects += 1) {
+    const safeUrl = await assertPublicImageUrl(currentUrl);
+    const response = await fetch(safeUrl, { redirect: 'manual', signal: AbortSignal.timeout(15000) });
+    if (response.status >= 300 && response.status < 400 && response.headers.get('location')) {
+      currentUrl = new URL(response.headers.get('location'), safeUrl).href;
+      continue;
+    }
+    if (!response.ok) throw new Error(`下载图片失败（HTTP ${response.status}）`);
+    const imageTypes = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif', 'image/webp': '.webp' };
+    const contentType = String(response.headers.get('content-type') || '').split(';')[0].toLowerCase();
+    const ext = imageTypes[contentType];
+    if (!ext) throw new Error('远程地址不是支持的图片格式');
+    const declaredSize = Number(response.headers.get('content-length') || 0);
+    if (declaredSize > 15 * 1024 * 1024) throw new Error('图片超过 15MB');
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length > 15 * 1024 * 1024) throw new Error('图片超过 15MB');
+    const remoteName = safeName(path.basename(safeUrl.pathname, path.extname(safeUrl.pathname)), 'pasted-image');
+    const filename = `${Date.now()}-${remoteName}${ext}`;
+    fs.writeFileSync(path.join(imagesDir, filename), buffer);
+    return `./images/${filename}`;
+  }
+  throw new Error('图片重定向次数过多');
+}
 
 function findGit() {
   const candidates = [
@@ -93,6 +145,7 @@ http.createServer(async(req,res)=>{try{
   if(req.method==='GET'&&url.pathname==='/api/post'){const filename=path.basename(url.searchParams.get('filename')||'');if(!filename.endsWith('.md'))return json(res,400,{error:'文件名无效'});const parsed=matter(fs.readFileSync(path.join(postsDir,filename),'utf8'));const author=!parsed.data.author||parsed.data.author==='baoge'?'宝哥':parsed.data.author;return json(res,200,{...parsed.data,author,bodyHtml:marked.parse(parsed.content.trimStart())})}
   if(req.method==='POST'&&url.pathname==='/api/post'){const data=await readBody(req);if(!String(data.title||'').trim())return json(res,400,{error:'请填写文章标题'});const date=parseBeijingDate(data.date);if(Number.isNaN(date.getTime()))return json(res,400,{error:'日期格式无效'});const prefix=beijingDatePrefix(date);const filename=data.originalFilename?path.basename(data.originalFilename):`${prefix}-${safeName(data.title,'post')}.md`;const author=!data.author||data.author==='baoge'?'宝哥':String(data.author).trim();const frontmatter={title:String(data.title).trim(),author,date:date.toISOString(),source:String(data.source||'原创').trim(),thumbnail:String(data.thumbnail||'').trim(),summary:String(data.summary||'').trim()};fs.writeFileSync(path.join(postsDir,filename),matter.stringify(String(data.body||''),frontmatter),'utf8');return json(res,200,{filename})}
   if(req.method==='POST'&&url.pathname==='/api/image'){const data=await readBody(req);const match=String(data.data||'').match(/^data:image\/[\w.+-]+;base64,(.+)$/);if(!match)return json(res,400,{error:'图片格式无效'});const ext=path.extname(data.name||'').toLowerCase();if(!['.jpg','.jpeg','.png','.gif','.webp','.svg'].includes(ext))return json(res,400,{error:'不支持该图片格式'});const filename=`${Date.now()}-${safeName(path.basename(data.name,ext),'image')}${ext}`;fs.writeFileSync(path.join(imagesDir,filename),Buffer.from(match[1],'base64'));return json(res,200,{path:`./images/${filename}`})}
+  if(req.method==='POST'&&url.pathname==='/api/remote-image'){const data=await readBody(req);const imagePath=await downloadRemoteImage(data.url);return json(res,200,{path:imagePath})}
   if(req.method==='POST'&&url.pathname==='/api/publish'){const data=await readBody(req),message=String(data.message||'').trim();if(!message)return json(res,400,{error:'Commit 信息不能为空'});await git(['add','--','posts','images','site-config.json']);const staged=await git(['diff','--cached','--name-only']);if(staged)await git(['commit','-m',message]);await git(['push']);return json(res,200,{message:staged?`发布成功：${message}\n${staged}`:'没有新变更，已有本地 commit 已推送。'})}
   if(req.method==='POST'&&url.pathname==='/api/notification'){const data=await readBody(req),title=String(data.title||'').trim(),body=String(data.body||'').trim(),targetUrl=String(data.url||'').trim()||'https://baogezhao.github.io/888/';if(!title)return json(res,400,{error:'请填写通知标题'});if(!body)return json(res,400,{error:'请填写通知正文'});let parsedUrl;try{parsedUrl=new URL(targetUrl)}catch{return json(res,400,{error:'通知链接格式无效'})}if(parsedUrl.protocol!=='https:'||parsedUrl.hostname!=='baogezhao.github.io'||!(parsedUrl.pathname==='/888'||parsedUrl.pathname.startsWith('/888/')))return json(res,400,{error:'通知链接必须是宝哥彩吧网站地址'});const request={title:title.slice(0,100),body:body.slice(0,200),url:targetUrl,requestedAt:new Date().toISOString()};fs.writeFileSync(path.join(notificationsDir,'manual.json'),JSON.stringify(request,null,2)+'\n','utf8');await git(['add','--','notifications/manual.json']);await git(['commit','-m',`手动推送：${title.slice(0,40)}`]);await git(['push']);return json(res,200,{message:'通知请求已提交，网站部署成功后将自动发送。'})}
   if(req.method==='DELETE'&&url.pathname==='/api/post'){const filename=path.basename(url.searchParams.get('filename')||''),data=await readBody(req),message=String(data.message||'').trim();if(!filename.endsWith('.md'))return json(res,400,{error:'文件名无效'});if(!message)return json(res,400,{error:'Commit 信息不能为空'});const filePath=path.join(postsDir,filename);if(!fs.existsSync(filePath))return json(res,404,{error:'文章不存在'});fs.unlinkSync(filePath);await git(['add','-A','--','posts']);await git(['commit','-m',message]);await git(['push']);return json(res,200,{message:`已删除并发布：${filename}`})}

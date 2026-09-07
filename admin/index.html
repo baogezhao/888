@@ -81,6 +81,35 @@
     $('closeNotification').onclick=$('cancelNotification').onclick=()=>$('notificationDialog').close();
     $('confirmNotification').onclick=async()=>{if(!confirm('确定向所有 App 用户发送这条通知吗？'))return;try{notificationStatus('正在提交通知请求……');$('confirmNotification').disabled=true;const result=await api('/api/notification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:$('notificationTitle').value,body:$('notificationBody').value,url:$('notificationUrl').value})});notificationStatus(result.message)}catch(error){notificationStatus(error.message,true)}finally{$('confirmNotification').disabled=false}};
     document.addEventListener('selectionchange',()=>{const selection=getSelection();if(selection.rangeCount&&$('body').contains(selection.anchorNode))savedEditorRange=selection.getRangeAt(0).cloneRange()});
+    async function uploadPastedFile(file){const optimized=await optimizeImage(file);return api('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(optimized)})}
+    function insertEditorHtml(html,range){$('body').focus();if(range&&$('body').contains(range.commonAncestorContainer)){const selection=getSelection();selection.removeAllRanges();selection.addRange(range)}document.execCommand('insertHTML',false,html)}
+    $('body').addEventListener('paste',async event=>{
+      const clipboard=event.clipboardData;if(!clipboard)return;
+      const html=clipboard.getData('text/html');
+      const imageFiles=Array.from(clipboard.items).filter(item=>item.kind==='file'&&item.type.startsWith('image/')).map(item=>item.getAsFile()).filter(Boolean);
+      if(!html&&!imageFiles.length)return;
+      event.preventDefault();
+      const range=getSelection().rangeCount?getSelection().getRangeAt(0).cloneRange():savedEditorRange;
+      try{
+        status('正在复制文字和图片，请稍候……');
+        if(!html){const uploaded=await uploadPastedFile(imageFiles[0]);insertEditorHtml(`<img src="${uploaded.path}" alt="粘贴图片" loading="lazy" decoding="async"><p><br></p>`,range);status('图片已复制到本站并插入正文，尚未发布。');return}
+        const documentCopy=new DOMParser().parseFromString(html,'text/html');
+        documentCopy.querySelectorAll('script,style,iframe,object,embed,link,meta').forEach(node=>node.remove());
+        documentCopy.querySelectorAll('*').forEach(node=>Array.from(node.attributes).forEach(attribute=>{if(attribute.name.toLowerCase().startsWith('on'))node.removeAttribute(attribute.name)}));
+        let fileIndex=0,imageCount=0;
+        for(const image of documentCopy.querySelectorAll('img')){
+          const source=image.getAttribute('src')||'';let uploadedPath='';
+          if(source.startsWith('data:image/')){const type=(source.match(/^data:image\/([\w.+-]+)/)||[])[1]||'png';const result=await api('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:`pasted-image.${type==='jpeg'?'jpg':type}`,data:source})});uploadedPath=result.path}
+          else if(source.startsWith('blob:')&&imageFiles[fileIndex]){const result=await uploadPastedFile(imageFiles[fileIndex++]);uploadedPath=result.path}
+          else if(/^https?:\/\/127\.0\.0\.1(?::\d+)?\/admin\/images\//i.test(source)){uploadedPath='./images/'+decodeURIComponent(source.split('/').pop())}
+          else if(/^https:\/\/baogezhao\.github\.io\/888\/images\//i.test(source)){uploadedPath='./images/'+decodeURIComponent(source.split('/').pop())}
+          else if(/^https?:\/\//i.test(source)){const result=await api('/api/remote-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:source})});uploadedPath=result.path}
+          if(uploadedPath){image.setAttribute('src',uploadedPath);image.setAttribute('loading','lazy');image.setAttribute('decoding','async');imageCount++}
+        }
+        insertEditorHtml(documentCopy.body.innerHTML,range);
+        status(imageCount?`内容已粘贴，其中 ${imageCount} 张图片已复制到本站，尚未发布。`:'内容已粘贴，未检测到可复制的图片。');
+      }catch(error){status('粘贴失败：'+error.message,true)}
+    });
     function formatText(command,value){$('body').focus();if(savedEditorRange&&$('body').contains(savedEditorRange.commonAncestorContainer)){const selection=getSelection();selection.removeAllRanges();selection.addRange(savedEditorRange)}document.execCommand('styleWithCSS',false,true);document.execCommand(command,false,value);savedEditorRange=getSelection().rangeCount?getSelection().getRangeAt(0).cloneRange():null}
     document.querySelectorAll('[data-cmd]').forEach(button=>button.onclick=()=>formatText(button.dataset.cmd,button.dataset.value||null));
     $('fontSize').onchange=event=>{if(event.target.value)formatText('fontSize',event.target.value);event.target.value=''};

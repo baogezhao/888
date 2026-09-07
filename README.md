@@ -256,6 +256,12 @@ https://baogezhao.github.io/888/
 
 打开 GitHub 仓库的“Actions → Send Article Notification → Run workflow”，填写通知标题、正文和可选的网址即可发送。
 
+也可以在本地文章后台点击左侧的“🔔 手动发送通知”。后台会提交通知请求，网站部署成功后再安全地调用 Firebase；Firebase 服务账号私钥不会保存在本地后台或网页中。
+
+## 从其他页面粘贴图文
+
+在正文编辑区粘贴网页或文档中的图文内容时，后台会自动识别图片，将支持的 JPG、PNG、GIF、WebP 图片复制到项目的 `images/` 目录，并把正文地址替换为本站图片地址。单独复制一张图片后粘贴也受支持。远程图片最大为 15MB，本机和内网图片地址不会被后台下载。
+
 在 Firebase 控制台的 Messaging 页面创建通知时：
 
 - 目标选择主题 `all_users`，可向所有已安装并允许通知的用户发送。
