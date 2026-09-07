@@ -6,6 +6,7 @@
   <style>
     :root{font-family:system-ui;color:#1f2937;background:#f3f4f6}*{box-sizing:border-box}body{margin:0}header{background:#111827;color:#fff;padding:14px 22px;display:flex;justify-content:space-between}main{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 52px)}aside{background:#fff;border-right:1px solid #ddd;padding:16px}section{padding:24px;max-width:1000px;width:100%}input,textarea,select,button{font:inherit}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px}textarea{resize:vertical;min-height:130px;line-height:1.6}label{display:block;margin-bottom:14px;font-weight:600}label span{display:block;margin-bottom:5px}button{border:0;border-radius:6px;padding:9px 14px;cursor:pointer;background:#2563eb;color:#fff}.secondary{background:#475569}.success{background:#15803d}.danger{background:#b91c1c}.announcement-entry{width:100%;margin-top:10px;background:#b91c1c}.actions,.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.toolbar{align-items:center;padding:8px;background:#e2e8f0;border-radius:7px 7px 0 0}.toolbar button,.toolbar select{background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:5px;padding:6px 10px}.toolbar-color{display:inline-flex;align-items:center;gap:6px;margin:0;padding:3px 8px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;color:#334155;font-size:14px}.toolbar-color input{width:30px;height:27px;padding:1px;border:0;background:transparent;cursor:pointer}.editor{min-height:360px;padding:18px;background:#fff;border:1px solid #cbd5e1;border-top:0;border-radius:0 0 7px 7px;line-height:1.7;outline:none}.editor:empty:before{content:'在这里写正文……';color:#94a3b8}.editor img{max-width:100%;height:auto}.editor:focus{box-shadow:0 0 0 2px #bfdbfe}#posts{list-style:none;padding:0}#posts button{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;width:100%;text-align:left;background:transparent;color:#334155;padding:9px 8px}#posts button:hover{background:#eff6ff}.post-name{min-width:0;overflow-wrap:anywhere}.post-views{flex:0 0 auto;border-radius:999px;padding:2px 7px;background:#f1f5f9;color:#64748b;font-size:12px;white-space:nowrap}#status{min-height:24px;margin-top:12px;color:#475569;white-space:pre-wrap}small{color:#64748b;font-weight:normal}.announcement-dialog{width:min(560px,calc(100% - 32px));border:0;border-radius:12px;padding:0;box-shadow:0 20px 60px #0005}.announcement-dialog::backdrop{background:#0008}.dialog-content{padding:24px}.dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.dialog-head h2{margin:0}.dialog-close{padding:2px 9px;background:transparent;color:#64748b;font-size:26px}.checkbox{display:flex;align-items:center;gap:8px}.checkbox input{width:auto}.checkbox span{margin:0}@media(max-width:720px){main{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #ddd}}
     .notification-entry{width:100%;margin-top:10px;background:#7c3aed}
+    .tool-entry{width:100%;margin-top:10px;background:#0f766e}
     .editor{height:60vh;max-height:720px;overflow-y:auto;overscroll-behavior:contain}
     @media(max-width:720px){.editor{height:55vh;max-height:600px}}
     #notificationStatus{min-height:24px;margin-top:12px;color:#475569;white-space:pre-wrap}
@@ -14,7 +15,7 @@
 <body>
   <header><strong>本地文章后台</strong><span>所见即所得编辑 · 文件直接保存到代码库</span></header>
   <main>
-    <aside><button id="newPost">＋ 新建文章</button><button id="editAnnouncement" class="announcement-entry">📢 编辑首页公告</button><button id="sendNotification" class="notification-entry">🔔 手动发送通知</button><h3>已有文章</h3><ul id="posts"></ul></aside>
+    <aside><button id="newPost">＋ 新建文章</button><button id="editAnnouncement" class="announcement-entry">📢 编辑首页公告</button><button id="sendNotification" class="notification-entry">🔔 手动发送通知</button><button id="openTxtConverter" class="tool-entry">📊 TXT 转 Excel</button><h3>已有文章</h3><ul id="posts"></ul></aside>
     <section>
       <label><span>标题</span><input id="title" placeholder="文章标题"></label>
       <label><span>作者</span><input id="author" value="宝哥"></label>
@@ -57,6 +58,17 @@
       <div id="notificationStatus"></div>
     </div>
   </dialog>
+  <dialog id="txtConverterDialog" class="announcement-dialog">
+    <div class="dialog-content">
+      <div class="dialog-head"><h2>TXT 转 Excel</h2><button id="closeTxtConverter" class="dialog-close" aria-label="关闭">×</button></div>
+      <label><span>选择 TXT 文件 <small>最大 10MB</small></span><input id="txtFile" type="file" accept=".txt,text/plain,.csv,text/csv"></label>
+      <label><span>文字编码</span><select id="txtEncoding"><option value="auto">自动识别 UTF-8 / GB18030</option><option value="utf-8">UTF-8</option><option value="gb18030">GB18030（常见中文 ANSI）</option></select></label>
+      <label><span>分列方式</span><select id="txtDelimiter"><option value="auto">自动识别</option><option value="tab">制表符（Tab）</option><option value="comma">逗号</option><option value="pipe">竖线 |</option><option value="semicolon">分号</option><option value="space">连续空格</option></select></label>
+      <label class="checkbox"><input id="txtHasHeader" type="checkbox" checked><span>第一行是表头</span></label>
+      <div class="actions"><button id="convertTxt" class="success">转换并下载 Excel</button><button id="cancelTxtConverter" class="secondary">取消</button></div>
+      <div id="txtConverterStatus"></div>
+    </div>
+  </dialog>
   <script>
     const $=id=>document.getElementById(id);let currentFilename='',savedEditorRange=null;
     function status(message,error=false){$('status').textContent=message;$('status').style.color=error?'#b91c1c':'#475569'}
@@ -71,6 +83,7 @@
     async function saveAnnouncement(){return api('/api/announcement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:$('announcementEnabled').checked,title:$('announcementTitle').value,content:$('announcementContent').value})})}
     function announcementStatus(message,error=false){$('announcementStatus').textContent=message;$('announcementStatus').style.color=error?'#b91c1c':'#475569'}
     function notificationStatus(message,error=false){$('notificationStatus').textContent=message;$('notificationStatus').style.color=error?'#b91c1c':'#475569'}
+    function txtConverterStatus(message,error=false){$('txtConverterStatus').textContent=message;$('txtConverterStatus').style.color=error?'#b91c1c':'#475569'}
 
     $('newPost').onclick=resetEditor;
     $('editAnnouncement').onclick=async()=>{try{announcementStatus('');await loadAnnouncement();$('announcementDialog').showModal()}catch(error){status(error.message,true)}};
@@ -80,6 +93,11 @@
     $('sendNotification').onclick=()=>{notificationStatus('');if($('title').value.trim())$('notificationTitle').value=$('title').value.trim();$('notificationDialog').showModal()};
     $('closeNotification').onclick=$('cancelNotification').onclick=()=>$('notificationDialog').close();
     $('confirmNotification').onclick=async()=>{if(!confirm('确定向所有 App 用户发送这条通知吗？'))return;try{notificationStatus('正在提交通知请求……');$('confirmNotification').disabled=true;const result=await api('/api/notification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:$('notificationTitle').value,body:$('notificationBody').value,url:$('notificationUrl').value})});notificationStatus(result.message)}catch(error){notificationStatus(error.message,true)}finally{$('confirmNotification').disabled=false}};
+    $('openTxtConverter').onclick=()=>{txtConverterStatus('');$('txtConverterDialog').showModal()};
+    $('closeTxtConverter').onclick=$('cancelTxtConverter').onclick=()=>$('txtConverterDialog').close();
+    function decodeTxtFile(buffer,encoding){if(encoding!=='auto')return new TextDecoder(encoding).decode(buffer);try{return new TextDecoder('utf-8',{fatal:true}).decode(buffer)}catch{return new TextDecoder('gb18030').decode(buffer)}}
+    $('txtFile').onchange=()=>{const file=$('txtFile').files[0];txtConverterStatus(file?`已选择：${file.name}（${Math.ceil(file.size/1024)} KB）`:'')};
+    $('convertTxt').onclick=async()=>{const file=$('txtFile').files[0];if(!file)return txtConverterStatus('请先选择 TXT 文件。',true);if(file.size>10*1024*1024)return txtConverterStatus('TXT 文件不能超过 10MB。',true);try{txtConverterStatus('正在生成 Excel……');$('convertTxt').disabled=true;const text=decodeTxtFile(await file.arrayBuffer(),$('txtEncoding').value);const response=await fetch('/api/txt-to-excel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,filename:file.name,delimiter:$('txtDelimiter').value,hasHeader:$('txtHasHeader').checked})});if(!response.ok){const result=await response.json();throw new Error(result.error||'转换失败')}const blob=await response.blob(),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=file.name.replace(/\.[^.]+$/, '')+'.xlsx';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),1000);txtConverterStatus('转换完成，Excel 文件已下载。')}catch(error){txtConverterStatus(error.message,true)}finally{$('convertTxt').disabled=false}};
     document.addEventListener('selectionchange',()=>{const selection=getSelection();if(selection.rangeCount&&$('body').contains(selection.anchorNode))savedEditorRange=selection.getRangeAt(0).cloneRange()});
     async function uploadPastedFile(file){const optimized=await optimizeImage(file);return api('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(optimized)})}
     function insertEditorHtml(html,range){$('body').focus();if(range&&$('body').contains(range.commonAncestorContainer)){const selection=getSelection();selection.removeAllRanges();selection.addRange(range)}document.execCommand('insertHTML',false,html)}

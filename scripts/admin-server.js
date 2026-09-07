@@ -6,6 +6,7 @@ const dns = require('dns').promises;
 const net = require('net');
 const matter = require('gray-matter');
 const { marked } = require('marked');
+const ExcelJS = require('exceljs');
 
 const root = path.resolve(__dirname, '..');
 const postsDir = path.join(root, 'posts');
@@ -70,6 +71,64 @@ async function downloadRemoteImage(value) {
     return `./images/${filename}`;
   }
   throw new Error('图片重定向次数过多');
+}
+
+function parseDelimitedLine(line, delimiter) {
+  if (delimiter === 'space') return line.trim().split(/\s+/);
+  const values = [];
+  let value = '';
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    if (character === '"') {
+      if (quoted && line[index + 1] === '"') { value += '"'; index += 1; }
+      else quoted = !quoted;
+    } else if (character === delimiter && !quoted) {
+      values.push(value.trim()); value = '';
+    } else value += character;
+  }
+  values.push(value.trim());
+  return values;
+}
+
+function detectDelimiter(lines) {
+  const candidates = ['\t', ',', '|', ';'];
+  const scores = candidates.map(delimiter => {
+    const counts = lines.slice(0, 20).map(line => parseDelimitedLine(line, delimiter).length);
+    const useful = counts.filter(count => count > 1);
+    const consistent = useful.length && useful.every(count => count === useful[0]);
+    return { delimiter, score: useful.length * 10 + (consistent ? 20 : 0) + Math.max(0, ...(useful || [0])) };
+  }).sort((a, b) => b.score - a.score);
+  return scores[0].score > 0 ? scores[0].delimiter : 'space';
+}
+
+async function textToExcel(data) {
+  const text = String(data.text || '').replace(/^\uFEFF/, '');
+  const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+  if (!lines.length) throw new Error('TXT 文件没有可转换的内容');
+  if (lines.length > 100000) throw new Error('TXT 文件超过 100,000 行');
+  const delimiters = { tab: '\t', comma: ',', pipe: '|', semicolon: ';', space: 'space' };
+  const delimiter = data.delimiter === 'auto' || !delimiters[data.delimiter] ? detectDelimiter(lines) : delimiters[data.delimiter];
+  const rows = lines.map(line => parseDelimitedLine(line, delimiter));
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = '宝哥彩吧文章后台';
+  workbook.created = new Date();
+  const worksheet = workbook.addWorksheet('转换结果');
+  worksheet.addRows(rows);
+  if (data.hasHeader !== false && worksheet.rowCount) {
+    const header = worksheet.getRow(1);
+    header.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    header.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } };
+    header.alignment = { vertical: 'middle' };
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+    if (worksheet.columnCount) worksheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: worksheet.columnCount } };
+  }
+  worksheet.columns.forEach(column => {
+    let width = 10;
+    column.eachCell({ includeEmpty: false }, cell => { width = Math.max(width, Math.min(50, String(cell.value || '').length + 2)); });
+    column.width = width;
+  });
+  return workbook.xlsx.writeBuffer();
 }
 
 function findGit() {
@@ -146,6 +205,7 @@ http.createServer(async(req,res)=>{try{
   if(req.method==='POST'&&url.pathname==='/api/post'){const data=await readBody(req);if(!String(data.title||'').trim())return json(res,400,{error:'请填写文章标题'});const date=parseBeijingDate(data.date);if(Number.isNaN(date.getTime()))return json(res,400,{error:'日期格式无效'});const prefix=beijingDatePrefix(date);const filename=data.originalFilename?path.basename(data.originalFilename):`${prefix}-${safeName(data.title,'post')}.md`;const author=!data.author||data.author==='baoge'?'宝哥':String(data.author).trim();const frontmatter={title:String(data.title).trim(),author,date:date.toISOString(),source:String(data.source||'原创').trim(),thumbnail:String(data.thumbnail||'').trim(),summary:String(data.summary||'').trim()};fs.writeFileSync(path.join(postsDir,filename),matter.stringify(String(data.body||''),frontmatter),'utf8');return json(res,200,{filename})}
   if(req.method==='POST'&&url.pathname==='/api/image'){const data=await readBody(req);const match=String(data.data||'').match(/^data:image\/[\w.+-]+;base64,(.+)$/);if(!match)return json(res,400,{error:'图片格式无效'});const ext=path.extname(data.name||'').toLowerCase();if(!['.jpg','.jpeg','.png','.gif','.webp','.svg'].includes(ext))return json(res,400,{error:'不支持该图片格式'});const filename=`${Date.now()}-${safeName(path.basename(data.name,ext),'image')}${ext}`;fs.writeFileSync(path.join(imagesDir,filename),Buffer.from(match[1],'base64'));return json(res,200,{path:`./images/${filename}`})}
   if(req.method==='POST'&&url.pathname==='/api/remote-image'){const data=await readBody(req);const imagePath=await downloadRemoteImage(data.url);return json(res,200,{path:imagePath})}
+  if(req.method==='POST'&&url.pathname==='/api/txt-to-excel'){const data=await readBody(req);const buffer=await textToExcel(data);const baseName=safeName(path.basename(String(data.filename||'转换结果'),path.extname(String(data.filename||''))),'转换结果');res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':`attachment; filename="converted.xlsx"; filename*=UTF-8''${encodeURIComponent(baseName+'.xlsx')}`,'Content-Length':buffer.length,'Cache-Control':'no-store'});return res.end(Buffer.from(buffer))}
   if(req.method==='POST'&&url.pathname==='/api/publish'){const data=await readBody(req),message=String(data.message||'').trim();if(!message)return json(res,400,{error:'Commit 信息不能为空'});await git(['add','--','posts','images','site-config.json']);const staged=await git(['diff','--cached','--name-only']);if(staged)await git(['commit','-m',message]);await git(['push']);return json(res,200,{message:staged?`发布成功：${message}\n${staged}`:'没有新变更，已有本地 commit 已推送。'})}
   if(req.method==='POST'&&url.pathname==='/api/notification'){const data=await readBody(req),title=String(data.title||'').trim(),body=String(data.body||'').trim(),targetUrl=String(data.url||'').trim()||'https://baogezhao.github.io/888/';if(!title)return json(res,400,{error:'请填写通知标题'});if(!body)return json(res,400,{error:'请填写通知正文'});let parsedUrl;try{parsedUrl=new URL(targetUrl)}catch{return json(res,400,{error:'通知链接格式无效'})}if(parsedUrl.protocol!=='https:'||parsedUrl.hostname!=='baogezhao.github.io'||!(parsedUrl.pathname==='/888'||parsedUrl.pathname.startsWith('/888/')))return json(res,400,{error:'通知链接必须是宝哥彩吧网站地址'});const request={title:title.slice(0,100),body:body.slice(0,200),url:targetUrl,requestedAt:new Date().toISOString()};fs.writeFileSync(path.join(notificationsDir,'manual.json'),JSON.stringify(request,null,2)+'\n','utf8');await git(['add','--','notifications/manual.json']);await git(['commit','-m',`手动推送：${title.slice(0,40)}`]);await git(['push']);return json(res,200,{message:'通知请求已提交，网站部署成功后将自动发送。'})}
   if(req.method==='DELETE'&&url.pathname==='/api/post'){const filename=path.basename(url.searchParams.get('filename')||''),data=await readBody(req),message=String(data.message||'').trim();if(!filename.endsWith('.md'))return json(res,400,{error:'文件名无效'});if(!message)return json(res,400,{error:'Commit 信息不能为空'});const filePath=path.join(postsDir,filename);if(!fs.existsSync(filePath))return json(res,404,{error:'文章不存在'});fs.unlinkSync(filePath);await git(['add','-A','--','posts']);await git(['commit','-m',message]);await git(['push']);return json(res,200,{message:`已删除并发布：${filename}`})}
