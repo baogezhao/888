@@ -102,6 +102,33 @@ function detectDelimiter(lines) {
   return scores[0].score > 0 ? scores[0].delimiter : 'space';
 }
 
+function arrangeMatchColumns(rows, hasHeader) {
+  if (!hasHeader || !rows.length) return rows;
+  const headers = rows[0].map(value => String(value).trim());
+  const awayIndex = headers.indexOf('客队');
+  const resultIndex = headers.indexOf('赛果');
+  if (awayIndex < 0 || resultIndex < 0) return rows;
+
+  return rows.map((row, rowIndex) => {
+    const values = [...row];
+    const awayValue = values[awayIndex] ?? '';
+    const resultValue = values[resultIndex] ?? '';
+    [awayIndex, resultIndex].sort((a, b) => b - a).forEach(index => values.splice(index, 1));
+    while (values.length < 3) values.push('');
+    values.splice(3, 0, awayValue, resultValue);
+
+    if (rowIndex === 0) {
+      values.splice(4, 1, '主队得分', '客队得分');
+    } else {
+      const scoreParts = String(values[4] ?? '').split('-');
+      const homeScore = (scoreParts.shift() || '').trim();
+      const awayScore = scoreParts.join('-').trim();
+      values.splice(4, 1, homeScore, awayScore);
+    }
+    return values;
+  });
+}
+
 async function textToExcel(data) {
   const text = String(data.text || '').replace(/^\uFEFF/, '');
   const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
@@ -109,7 +136,8 @@ async function textToExcel(data) {
   if (lines.length > 100000) throw new Error('TXT 文件超过 100,000 行');
   const delimiters = { tab: '\t', comma: ',', pipe: '|', semicolon: ';', space: 'space' };
   const delimiter = data.delimiter === 'auto' || !delimiters[data.delimiter] ? detectDelimiter(lines) : delimiters[data.delimiter];
-  const rows = lines.map(line => parseDelimitedLine(line, delimiter));
+  const parsedRows = lines.map(line => parseDelimitedLine(line, delimiter));
+  const rows = arrangeMatchColumns(parsedRows, data.hasHeader !== false);
   const workbook = new ExcelJS.Workbook();
   workbook.creator = '宝哥彩吧文章后台';
   workbook.created = new Date();
