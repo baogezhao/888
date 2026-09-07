@@ -189,6 +189,12 @@ async function textToExcel(data) {
       };
     });
   }
+  for (let rowNumber = 1; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+    for (let columnNumber = 1; columnNumber <= worksheet.columnCount; columnNumber += 1) {
+      const cell = worksheet.getCell(rowNumber, columnNumber);
+      cell.font = { ...cell.font, size: 10 };
+    }
+  }
   worksheet.columns.forEach(column => {
     let width = 10;
     column.eachCell({ includeEmpty: false }, cell => { width = Math.max(width, Math.min(50, String(cell.value || '').length + 2)); });
