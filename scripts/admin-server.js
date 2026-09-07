@@ -148,6 +148,20 @@ function normalizeHandicapText(rows) {
   }));
 }
 
+function addDateYears(rows, hasHeader) {
+  if (!hasHeader || !rows.length) return rows;
+  const dateIndex = rows[0].findIndex(value => String(value).trim() === '日期');
+  if (dateIndex < 0) return rows;
+  return rows.map((row, rowIndex) => {
+    if (rowIndex === 0) return row;
+    const values = [...row];
+    const date = String(values[dateIndex] ?? '').trim();
+    const match = date.match(/^(\d{1,2})-(\d{1,2})$/);
+    if (match) values[dateIndex] = `${Number(match[1]) === 12 ? '2025' : '2026'}-${date}`;
+    return values;
+  });
+}
+
 async function textToExcel(data) {
   const text = String(data.text || '').replace(/^\uFEFF/, '');
   const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
@@ -156,7 +170,8 @@ async function textToExcel(data) {
   const delimiters = { tab: '\t', comma: ',', pipe: '|', semicolon: ';', space: 'space' };
   const delimiter = data.delimiter === 'auto' || !delimiters[data.delimiter] ? detectDelimiter(lines) : delimiters[data.delimiter];
   const parsedRows = lines.map(line => parseDelimitedLine(line, delimiter));
-  const rows = normalizeHandicapText(arrangeMatchColumns(parsedRows, data.hasHeader !== false));
+  const hasHeader = data.hasHeader !== false;
+  const rows = addDateYears(normalizeHandicapText(arrangeMatchColumns(parsedRows, hasHeader)), hasHeader);
   const workbook = new ExcelJS.Workbook();
   workbook.creator = '宝哥彩吧文章后台';
   workbook.created = new Date();
