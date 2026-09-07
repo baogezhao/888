@@ -175,8 +175,8 @@ async function textToExcel(data) {
       for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
         const cell = worksheet.getCell(rowNumber, handicapColumn);
         const value = String(cell.value ?? '').trim();
-        if (value === '赢') cell.font = { ...cell.font, color: { argb: 'FFFF0000' } };
-        if (value === '输') cell.font = { ...cell.font, color: { argb: 'FF0000FF' } };
+        if (value === '赢' || value === '赢半') cell.font = { ...cell.font, color: { argb: 'FFFF0000' } };
+        if (value === '输' || value === '输半') cell.font = { ...cell.font, color: { argb: 'FF0000FF' } };
       }
     }
   }
