@@ -200,7 +200,7 @@ async function textToExcel(data) {
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { theme: 9, tint: 0.6 }
+        fgColor: { theme: 4, tint: 0.6 }
       };
     });
   }
