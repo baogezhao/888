@@ -129,6 +129,20 @@ function arrangeMatchColumns(rows, hasHeader) {
   });
 }
 
+function normalizeHandicapText(rows) {
+  const replacements = new Map([
+    ['球半/两', '球半/两球'],
+    ['一/球半', '一球/球半'],
+    ['两/两半', '两球/两球半'],
+    ['两半/三', '两球半/三球'],
+    ['两半', '两球半']
+  ]);
+  return rows.map(row => row.map(value => {
+    const text = String(value ?? '').trim();
+    return replacements.get(text) ?? value;
+  }));
+}
+
 async function textToExcel(data) {
   const text = String(data.text || '').replace(/^\uFEFF/, '');
   const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
@@ -137,7 +151,7 @@ async function textToExcel(data) {
   const delimiters = { tab: '\t', comma: ',', pipe: '|', semicolon: ';', space: 'space' };
   const delimiter = data.delimiter === 'auto' || !delimiters[data.delimiter] ? detectDelimiter(lines) : delimiters[data.delimiter];
   const parsedRows = lines.map(line => parseDelimitedLine(line, delimiter));
-  const rows = arrangeMatchColumns(parsedRows, data.hasHeader !== false);
+  const rows = normalizeHandicapText(arrangeMatchColumns(parsedRows, data.hasHeader !== false));
   const workbook = new ExcelJS.Workbook();
   workbook.creator = '宝哥彩吧文章后台';
   workbook.created = new Date();
