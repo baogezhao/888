@@ -235,7 +235,7 @@ async function fetchZucaiJson(url) {
   catch { throw new Error('目标网站返回的数据格式无法识别'); }
 }
 
-async function zucaiToExcel() {
+async function fetchZucaiMatches() {
   const timestamp = Date.now();
   const issues = await fetchZucaiJson(`https://cp.zgzcw.com/lottery/getissue.action?lotteryId=300&issueLen=20&d=${timestamp}`);
   if (!Array.isArray(issues) || !issues.length) throw new Error('没有找到可抓取的足彩期次');
@@ -247,18 +247,26 @@ async function zucaiToExcel() {
   const matches = Array.isArray(data.matchInfo) ? data.matchInfo : [];
   if (!matches.length) throw new Error(`第 ${issue} 期没有找到比赛数据`);
 
+  return {
+    issue,
+    matches: matches.map((match, index) => ({
+      number: index + 1,
+      league: String(match.leageName || match.leageNameFull || '').trim(),
+      home: String(match.hostName || match.hostNameFull || '').trim(),
+      versus: 'VS',
+      away: String(match.guestName || match.guestNameFull || '').trim()
+    }))
+  };
+}
+
+async function zucaiToExcel() {
+  const { issue, matches } = await fetchZucaiMatches();
   const workbook = new ExcelJS.Workbook();
   workbook.creator = '宝哥彩吧文章后台';
   workbook.created = new Date();
   const worksheet = workbook.addWorksheet(`足彩${issue}`);
   worksheet.addRow(['序号', '赛事', '主队', 'VS', '客队']);
-  matches.forEach((match, index) => worksheet.addRow([
-    index + 1,
-    String(match.leageName || match.leageNameFull || '').trim(),
-    String(match.hostName || match.hostNameFull || '').trim(),
-    'VS',
-    String(match.guestName || match.guestNameFull || '').trim()
-  ]));
+  matches.forEach(match => worksheet.addRow([match.number, match.league, match.home, match.versus, match.away]));
 
   const header = worksheet.getRow(1);
   header.font = { name: '宋体', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
@@ -354,6 +362,7 @@ http.createServer(async(req,res)=>{try{
   if(req.method==='POST'&&url.pathname==='/api/image'){const data=await readBody(req);const match=String(data.data||'').match(/^data:image\/[\w.+-]+;base64,(.+)$/);if(!match)return json(res,400,{error:'图片格式无效'});const ext=path.extname(data.name||'').toLowerCase();if(!['.jpg','.jpeg','.png','.gif','.webp','.svg'].includes(ext))return json(res,400,{error:'不支持该图片格式'});const filename=`${Date.now()}-${safeName(path.basename(data.name,ext),'image')}${ext}`;fs.writeFileSync(path.join(imagesDir,filename),Buffer.from(match[1],'base64'));return json(res,200,{path:`./images/${filename}`})}
   if(req.method==='POST'&&url.pathname==='/api/remote-image'){const data=await readBody(req);const imagePath=await downloadRemoteImage(data.url);return json(res,200,{path:imagePath})}
   if(req.method==='POST'&&url.pathname==='/api/txt-to-excel'){const data=await readBody(req);const buffer=await textToExcel(data);const baseName=safeName(path.basename(String(data.filename||'转换结果'),path.extname(String(data.filename||''))),'转换结果');res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':`attachment; filename="converted.xlsx"; filename*=UTF-8''${encodeURIComponent(baseName+'.xlsx')}`,'Content-Length':buffer.length,'Cache-Control':'no-store'});return res.end(Buffer.from(buffer))}
+  if(req.method==='GET'&&url.pathname==='/api/zucai-matches'){return json(res,200,await fetchZucaiMatches())}
   if(req.method==='POST'&&url.pathname==='/api/zucai-to-excel'){const result=await zucaiToExcel();const filename=`足彩14场-${result.issue}.xlsx`;res.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':`attachment; filename="zucai-${result.issue}.xlsx"; filename*=UTF-8''${encodeURIComponent(filename)}`,'Content-Length':result.buffer.length,'Cache-Control':'no-store','X-Match-Count':String(result.count)});return res.end(Buffer.from(result.buffer))}
   if(req.method==='POST'&&url.pathname==='/api/publish'){const data=await readBody(req),message=String(data.message||'').trim();if(!message)return json(res,400,{error:'Commit 信息不能为空'});await git(['add','--','posts','images','site-config.json']);const staged=await git(['diff','--cached','--name-only']);if(staged)await git(['commit','-m',message]);await git(['push']);return json(res,200,{message:staged?`发布成功：${message}\n${staged}`:'没有新变更，已有本地 commit 已推送。'})}
   if(req.method==='POST'&&url.pathname==='/api/notification'){const data=await readBody(req),title=String(data.title||'').trim(),body=String(data.body||'').trim(),targetUrl=String(data.url||'').trim()||'https://baogezhao.github.io/888/';if(!title)return json(res,400,{error:'请填写通知标题'});if(!body)return json(res,400,{error:'请填写通知正文'});let parsedUrl;try{parsedUrl=new URL(targetUrl)}catch{return json(res,400,{error:'通知链接格式无效'})}if(parsedUrl.protocol!=='https:'||parsedUrl.hostname!=='baogezhao.github.io'||!(parsedUrl.pathname==='/888'||parsedUrl.pathname.startsWith('/888/')))return json(res,400,{error:'通知链接必须是宝哥彩吧网站地址'});const request={title:title.slice(0,100),body:body.slice(0,200),url:targetUrl,requestedAt:new Date().toISOString()};fs.writeFileSync(path.join(notificationsDir,'manual.json'),JSON.stringify(request,null,2)+'\n','utf8');await git(['add','--','notifications/manual.json']);await git(['commit','-m',`手动推送：${title.slice(0,40)}`]);await git(['push']);return json(res,200,{message:'通知请求已提交，网站部署成功后将自动发送。'})}
