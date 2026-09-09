@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.ActivityNotFoundException;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -53,7 +55,33 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if ("baoge-share".equals(request.getUrl().getScheme())) {
+                    if (request.isForMainFrame() && request.hasGesture()
+                            && "article".equals(request.getUrl().getHost())) {
+                        shareCurrentArticle(view);
+                    }
+                    return true;
+                }
                 return false;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (!isTrustedSiteUrl(url) || !url.equals(view.getUrl())) return;
+                // Bind the existing button so installed apps also support older article pages.
+                // No JavaScript interface is exposed to external pages or embedded frames.
+                view.evaluateJavascript("(function(){"
+                    + "['share-wechat','share-system'].forEach(function(id){"
+                    + "var button=document.getElementById(id);"
+                    + "if(!button||button.dataset.nativeShare)return;"
+                    + "button.dataset.nativeShare='true';"
+                    + "button.addEventListener('click',function(event){"
+                    + "if(!event.isTrusted)return;"
+                    + "event.preventDefault();event.stopImmediatePropagation();"
+                    + "window.location.href='baoge-share://article';"
+                    + "},true);"
+                    + "});"
+                    + "})()", null);
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -86,12 +114,32 @@ public class MainActivity extends Activity {
         }
         if (candidate == null) return HOME_URL;
 
-        Uri uri = Uri.parse(candidate.trim());
-        boolean trusted = "https".equalsIgnoreCase(uri.getScheme())
+        return isTrustedSiteUrl(candidate.trim()) ? candidate.trim() : HOME_URL;
+    }
+
+    private boolean isTrustedSiteUrl(String candidate) {
+        if (candidate == null) return false;
+        Uri uri = Uri.parse(candidate);
+        return "https".equalsIgnoreCase(uri.getScheme())
             && "baogezhao.github.io".equalsIgnoreCase(uri.getHost())
+            && uri.getUserInfo() == null
+            && (uri.getPort() == -1 || uri.getPort() == 443)
             && uri.getPath() != null
             && (uri.getPath().equals("/888") || uri.getPath().startsWith("/888/"));
-        return trusted ? uri.toString() : HOME_URL;
+    }
+
+    private void shareCurrentArticle(WebView view) {
+        String url = view.getUrl();
+        if (!isTrustedSiteUrl(url)) return;
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("text/plain");
+        share.putExtra(Intent.EXTRA_TEXT, url);
+        share.putExtra(Intent.EXTRA_TITLE, view.getTitle());
+        try {
+            startActivity(Intent.createChooser(share, "分享文章"));
+        } catch (ActivityNotFoundException error) {
+            Toast.makeText(this, "没有可用的分享应用，请使用一键复制链接", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void askNotificationPermission() {

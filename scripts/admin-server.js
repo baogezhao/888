@@ -7,6 +7,7 @@ const net = require('net');
 const matter = require('gray-matter');
 const { marked } = require('marked');
 const ExcelJS = require('exceljs');
+const { addOddsetOdds } = require('./oddset');
 
 const root = path.resolve(__dirname, '..');
 const postsDir = path.join(root, 'posts');
@@ -249,30 +250,40 @@ async function fetchZucaiMatches() {
 
   return {
     issue,
-    matches: matches.map((match, index) => ({
+    ...await addOddsetOdds(matches.map((match, index) => ({
       number: index + 1,
       league: String(match.leageName || match.leageNameFull || '').trim(),
       home: String(match.hostName || match.hostNameFull || '').trim(),
       versus: 'VS',
-      away: String(match.guestName || match.guestNameFull || '').trim()
-    }))
+      away: String(match.guestName || match.guestNameFull || '').trim(),
+      startTime: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(match.gameStartDate || '')
+        ? match.gameStartDate.replace(' ', 'T') + '+08:00' : '',
+      odds: null
+    })))
   };
 }
 
+function formatOdds(odds) {
+  if (!odds) return '';
+  const values = [odds.home, odds.draw, odds.away];
+  return values.every(value => Number.isFinite(Number(value)) && Number(value) > 1)
+    ? values.map(value => Number(value).toFixed(2)).join(' ') : '';
+}
+
 async function zucaiToExcel() {
-  const { issue, matches } = await fetchZucaiMatches();
+  const { issue, matches, oddsInfo } = await fetchZucaiMatches();
   const workbook = new ExcelJS.Workbook();
   workbook.creator = '宝哥彩吧文章后台';
   workbook.created = new Date();
   const worksheet = workbook.addWorksheet(`足彩${issue}`);
-  worksheet.addRow(['序号', '赛事', '主队', 'VS', '客队']);
-  matches.forEach(match => worksheet.addRow([match.number, match.league, match.home, match.versus, match.away]));
+  worksheet.addRow(['序号', '赛事', '主队', 'VS', '客队', '指数']);
+  matches.forEach(match => worksheet.addRow([match.number, match.league, match.home, match.versus, match.away, formatOdds(match.odds)]));
 
   const header = worksheet.getRow(1);
   header.font = { name: '宋体', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
   header.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } };
   worksheet.views = [{ state: 'frozen', ySplit: 1 }];
-  worksheet.autoFilter = { from: 'A1', to: 'E1' };
+  worksheet.autoFilter = { from: 'A1', to: 'F1' };
   worksheet.eachRow(row => row.eachCell(cell => {
     cell.font = { ...cell.font, name: '宋体', size: 10 };
     cell.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -282,8 +293,18 @@ async function zucaiToExcel() {
     { key: 'league', width: 14 },
     { key: 'home', width: 20 },
     { key: 'versus', width: 8 },
-    { key: 'away', width: 20 }
+    { key: 'away', width: 20 },
+    { key: 'odds', width: 24 }
   ];
+  const info = workbook.addWorksheet('赔率说明');
+  info.addRows([
+    ['来源', 'ODDSET', oddsInfo.source],
+    ['指数顺序', '主胜 平 主负（全场常规时间）'],
+    ['抓取时间（UTC）', oddsInfo.fetchedAt || '未获取'],
+    ['已匹配', `${oddsInfo.matched} / ${matches.length}`],
+    ['状态', oddsInfo.error || '空白表示未匹配或未提供可用赛前赔率']
+  ]);
+  info.columns = [{ width: 22 }, { width: 75 }, { width: 55 }];
   return { issue, count: matches.length, buffer: await workbook.xlsx.writeBuffer() };
 }
 

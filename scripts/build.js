@@ -196,9 +196,11 @@ posts.forEach(post => {
   <h1>${post.title}</h1>
   <div class="share-bar">
     <strong>分享文章：</strong>
+    <button id="share-system">更多分享</button>
     <button id="share-wechat">微信分享</button>
     <a id="share-weibo" target="_blank" rel="noopener">微博</a>
     <button id="copy-link">一键复制链接</button>
+    <span id="share-status" role="status" aria-live="polite"></span>
   </div>
   <div class="meta">
     <span>作者：${post.author}</span> | 
@@ -237,27 +239,35 @@ posts.forEach(post => {
       document.body.removeChild(input);
       return copied;
     }
+    let sharing = false;
     async function shareToWechat(target) {
       if (isWechat) return showWechatGuide(target);
-      if (navigator.share) {
+      const status = document.getElementById('share-status');
+      if (sharing) return;
+      status.textContent = '';
+      if (typeof navigator.share === 'function') {
+        sharing = true;
         try {
-          // Sending title/text makes WeChat treat the payload as a plain text
-          // message. Share only the URL so WeChat can fetch the Open Graph
-          // metadata and render its title + description + thumbnail card.
+          // Share the URL; the receiving app determines its preview format.
           await navigator.share({ url: shareUrl });
           return;
         } catch (error) {
           if (error.name === 'AbortError') return;
+          status.textContent = '未能打开系统分享，请重试或使用浏览器菜单中的“分享”。';
+          return;
+        } finally {
+          sharing = false;
         }
       }
-      const copied = await copyShareUrl();
-      alert(copied ? '链接已复制，请打开微信并分享到' + target + '。' : '请长按浏览器地址栏复制链接，再打开微信分享。');
+      status.textContent = '当前浏览器不支持网页直接分享，请使用浏览器菜单中的“分享”，或用最新版 Chrome 打开；也可点击“一键复制链接”。';
     }
+    document.getElementById('share-system').onclick = () => shareToWechat('好友或朋友圈');
     document.getElementById('share-wechat').onclick = () => shareToWechat('好友或朋友圈');
     document.getElementById('wechat-guide').onclick = event => event.currentTarget.classList.remove('show');
     document.getElementById('copy-link').onclick = async event => {
+      const button = event.currentTarget;
       const copied = await copyShareUrl();
-      event.currentTarget.textContent = copied ? '链接已复制' : '复制失败，请长按地址栏';
+      button.textContent = copied ? '链接已复制' : '复制失败，请长按地址栏';
     };
     document.querySelectorAll('img').forEach(image => {
       const originalUrl = image.currentSrc || image.src;
