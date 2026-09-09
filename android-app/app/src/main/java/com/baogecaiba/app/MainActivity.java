@@ -133,8 +133,10 @@ public class MainActivity extends Activity {
         if (!isTrustedSiteUrl(url)) return;
         Intent share = new Intent(Intent.ACTION_SEND);
         share.setType("text/plain");
-        share.putExtra(Intent.EXTRA_TEXT, url);
-        share.putExtra(Intent.EXTRA_TITLE, view.getTitle());
+        String title = view.getTitle();
+        share.putExtra(Intent.EXTRA_TEXT, title == null || title.trim().isEmpty() ? url : title + "\n" + url);
+        share.putExtra(Intent.EXTRA_TITLE, title);
+        share.putExtra(Intent.EXTRA_SUBJECT, title);
         try {
             startActivity(Intent.createChooser(share, "分享文章"));
         } catch (ActivityNotFoundException error) {
