@@ -197,7 +197,7 @@ posts.forEach(post => {
   <div class="share-bar">
     <strong>分享文章：</strong>
     <button id="share-system">更多分享</button>
-    <button id="share-wechat">微信分享</button>
+    <button id="share-wechat-card">微信好友 / 朋友圈</button>
     <a id="share-weibo" target="_blank" rel="noopener">微博</a>
     <button id="copy-link">一键复制链接</button>
     <span id="share-status" role="status" aria-live="polite"></span>
@@ -212,6 +212,8 @@ posts.forEach(post => {
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>
+    <button id="wechat-copy-link" hidden>复制链接，去微信打开</button>
+    <p id="wechat-copy-status" role="status" aria-live="polite"></p>
     <small>点击任意位置关闭提示</small>
   </div>
   <script>
@@ -219,8 +221,13 @@ posts.forEach(post => {
     const shareTitle = document.title;
     document.getElementById('share-weibo').href = 'https://service.weibo.com/share/share.php?url=' + encodeURIComponent(shareUrl) + '&title=' + encodeURIComponent(shareTitle);
     const isWechat = /MicroMessenger/i.test(navigator.userAgent);
-    function showWechatGuide(target) {
-      document.getElementById('wechat-guide-text').textContent = '请点击右上角“…”菜单，然后选择“发送给朋友”或“分享到朋友圈”。当前目标：' + target;
+    function showWechatGuide() {
+      document.getElementById('wechat-guide-text').textContent = isWechat
+        ? '请点击右上角“…”菜单，再选择“发送给朋友”或“分享到朋友圈”，分享文章卡片。'
+        : '分享带封面和摘要的文章卡片：先复制链接，在微信中发给“文件传输助手”，点开文章，再通过右上角“…”选择“发送给朋友”或“分享到朋友圈”。';
+      document.getElementById('wechat-copy-link').hidden = isWechat;
+      document.getElementById('wechat-copy-status').textContent = '';
+      document.querySelector('#wechat-guide .arrow').hidden = !isWechat;
       document.getElementById('wechat-guide').classList.add('show');
     }
     async function copyShareUrl() {
@@ -240,8 +247,8 @@ posts.forEach(post => {
       return copied;
     }
     let sharing = false;
-    async function shareToWechat(target) {
-      if (isWechat) return showWechatGuide(target);
+    async function shareWithSystem() {
+      if (isWechat) return showWechatGuide();
       const status = document.getElementById('share-status');
       if (sharing) return;
       status.textContent = '';
@@ -262,8 +269,15 @@ posts.forEach(post => {
       }
       status.textContent = '当前浏览器不支持网页直接分享，请使用浏览器菜单中的“分享”，或用最新版 Chrome 打开；也可点击“一键复制链接”。';
     }
-    document.getElementById('share-system').onclick = () => shareToWechat('好友或朋友圈');
-    document.getElementById('share-wechat').onclick = () => shareToWechat('好友或朋友圈');
+    document.getElementById('share-system').onclick = shareWithSystem;
+    document.getElementById('share-wechat-card').onclick = showWechatGuide;
+    document.getElementById('wechat-copy-link').onclick = async event => {
+      event.stopPropagation();
+      const copied = await copyShareUrl();
+      document.getElementById('wechat-copy-status').textContent = copied
+        ? '已复制。请打开微信，发给文件传输助手后点开文章，再从右上角菜单分享卡片。'
+        : '复制失败，请使用页面的“一键复制链接”或长按地址栏复制。';
+    };
     document.getElementById('wechat-guide').onclick = event => event.currentTarget.classList.remove('show');
     document.getElementById('copy-link').onclick = async event => {
       const button = event.currentTarget;

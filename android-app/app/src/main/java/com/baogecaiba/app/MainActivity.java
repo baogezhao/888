@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
                 // Bind the existing button so installed apps also support older article pages.
                 // No JavaScript interface is exposed to external pages or embedded frames.
                 view.evaluateJavascript("(function(){"
-                    + "['share-wechat','share-system'].forEach(function(id){"
+                    + "['share-system'].forEach(function(id){"
                     + "var button=document.getElementById(id);"
                     + "if(!button||button.dataset.nativeShare)return;"
                     + "button.dataset.nativeShare='true';"
