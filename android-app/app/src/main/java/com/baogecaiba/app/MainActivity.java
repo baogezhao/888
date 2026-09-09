@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.ActivityNotFoundException;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -53,7 +55,33 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if ("baoge-share".equals(request.getUrl().getScheme())) {
+                    if (request.isForMainFrame() && request.hasGesture()
+                            && "article".equals(request.getUrl().getHost())) {
+                        shareCurrentArticle(view);
+                    }
+                    return true;
+                }
                 return false;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (!isTrustedSiteUrl(url) || !url.equals(view.getUrl())) return;
+                // Capture the click before the page falls back to copying the URL.
+                // The native handler only shares the current trusted top-level page.
+                view.evaluateJavascript("(function(){"
+                    + "['share-wechat','share-system'].forEach(function(id){"
+                    + "var button=document.getElementById(id);"
+                    + "if(!button||button.dataset.nativeShare)return;"
+                    + "button.dataset.nativeShare='true';"
+                    + "button.addEventListener('click',function(event){"
+                    + "if(!event.isTrusted)return;"
+                    + "event.preventDefault();event.stopImmediatePropagation();"
+                    + "window.location.href='baoge-share://article';"
+                    + "},true);"
+                    + "});"
+                    + "})()", null);
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -98,6 +126,20 @@ public class MainActivity extends Activity {
             && (uri.getPort() == -1 || uri.getPort() == 443)
             && uri.getPath() != null
             && (uri.getPath().equals("/888") || uri.getPath().startsWith("/888/"));
+    }
+
+    private void shareCurrentArticle(WebView view) {
+        String url = view.getUrl();
+        if (!isTrustedSiteUrl(url)) return;
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("text/plain");
+        share.putExtra(Intent.EXTRA_TEXT, url);
+        share.putExtra(Intent.EXTRA_TITLE, view.getTitle());
+        try {
+            startActivity(Intent.createChooser(share, "分享文章"));
+        } catch (ActivityNotFoundException error) {
+            Toast.makeText(this, "无法打开系统分享，请使用一键复制链接", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void askNotificationPermission() {
