@@ -42,6 +42,12 @@
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
     .wechat-guide p { max-width: 320px; margin: 16px 0 0 auto; font-size: 18px; line-height: 1.7; }
     .wechat-share-thumbnail { position: absolute; left: -10000px; top: 0; width: 300px; height: 300px; object-fit: cover; opacity: .01; pointer-events: none; }
+    .article-likes { margin-top: 32px; padding: 24px 12px; border-top: 1px solid #eee; text-align: center; }
+    .like-button { min-height: 48px; padding: 10px 24px; border: 1px solid #b91c1c; border-radius: 999px; background: #fff; color: #b91c1c; font-size: 17px; cursor: pointer; }
+    .like-button[aria-pressed="true"] { background: #b91c1c; color: #fff; }
+    .like-button:disabled { opacity: .6; cursor: default; }
+    .like-button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
+    .like-status { min-height: 24px; margin: 8px 0 0; color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -65,6 +71,13 @@
   
   <div class="content"><p>昨晚火线多档3中2，9点档打出48倍比分串关！今晚火线红单即将发出，继续约！<div><br></div><div>西甲第4轮，巴萨客场5-0狂扫巴伦西亚，成西甲唯一全胜球队。亚马尔梅开二度，费尔明传射建功，奥尔默助攻梅开二度。阿拉维斯主场5-2大胜奥萨苏纳，紧追其后排名第二。</div><div><br></div><div><img src="./images/1788782486711-1-barcelona.jpg" alt="1-barcelona.png" loading="lazy" decoding="async"><p>英超焦点战，阿森纳主场2-1逆转切尔西，将英超全胜球队缩小到两支。罗杰斯为切尔西首开纪录，但哈弗茨帮助阿森纳扳平比分，厄德高下半场帮助枪手打进制胜球。曼联客场被埃弗顿2-2绝平，运气实在不佳。</p><p><img src="./images/1788782741460-2-arsenal.jpg" alt="2-arsenal.png" loading="lazy" decoding="async"></p><p>其他场次，昨晚4场意甲，打出3场 平局，包括尤文与AC米兰的1-1平，值得关注。</p><p>今晚比赛，关注意甲乌迪内斯VS拉齐奥一场，两队一个1胜1平，一个两连胜，开局都不错，本场比赛，可能都不会轻易接受输球命运。</p><p><img src="./images/1788782931021-3-udinese.jpg" alt="3-udinese.png" loading="lazy" decoding="async"></p><p>另一场关注瑞典超，马尔默主场迎战索尔纳。两队相差2分，排名中游。马尔默近期客场连续赢球，主场则是遭遇连败。索尔纳则是迎来一波4连胜。这次两队相遇，马尔默能全取3分吗？最近10次同对阵交锋，马尔默6胜4平优势明显。但这次不宜过分看好。</p><p><img src="./images/1788783141658-4-malmo.jpg" alt="4-malmo.png" loading="lazy" decoding="async"></p><p style="color: rgb(41, 37, 36); font-family: Arial, sans-serif;"><span style="font-weight: bold; color: rgb(251, 19, 19);">欢迎大家收藏宝哥首页，请分享给好友或转发到朋友圈，让更多人看到我。</span></p><p style="color: rgb(41, 37, 36); font-family: Arial, sans-serif;"><span style="font-weight: bold; color: rgb(251, 19, 19);">安卓用户可以下载APP，更便捷看到宝哥每天的动态！</span></p><p style="color: rgb(41, 37, 36); font-family: Arial, sans-serif;"><img src="https://baogezhao.github.io/888/images/1788495702558-app.jpg" alt="app.png" loading="lazy" decoding="async"></p></div></p>
 </div>
+  <section id="article-likes" class="article-likes" aria-label="文章点赞">
+    <button type="button" class="like-button" aria-pressed="false" aria-describedby="like-status" disabled><span aria-hidden="true">👍</span> <span data-like-label>点赞</span> · <span data-like-count>—</span></button>
+    <p id="like-status" class="like-status" role="status" aria-live="polite"></p>
+    <noscript>请启用 JavaScript 后点赞。</noscript>
+  </section>
+  <script id="article-likes-config" type="application/json">{"firebase":{"apiKey":"AIzaSyB8uJml2H-Bl3MOHEpgKEOBZ4wApo8R8e8","projectId":"baogecaiba","appId":"1:901407342407:web:11191ed8c389f907ec1662"},"articleId":"9b40293e643c480e4aa78ee810c9fc1fed00ac778df38e98489739d356f35dd8"}</script>
+  <script src="./article-likes.js" defer></script>
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>

@@ -42,6 +42,12 @@
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
     .wechat-guide p { max-width: 320px; margin: 16px 0 0 auto; font-size: 18px; line-height: 1.7; }
     .wechat-share-thumbnail { position: absolute; left: -10000px; top: 0; width: 300px; height: 300px; object-fit: cover; opacity: .01; pointer-events: none; }
+    .article-likes { margin-top: 32px; padding: 24px 12px; border-top: 1px solid #eee; text-align: center; }
+    .like-button { min-height: 48px; padding: 10px 24px; border: 1px solid #b91c1c; border-radius: 999px; background: #fff; color: #b91c1c; font-size: 17px; cursor: pointer; }
+    .like-button[aria-pressed="true"] { background: #b91c1c; color: #fff; }
+    .like-button:disabled { opacity: .6; cursor: default; }
+    .like-button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
+    .like-status { min-height: 24px; margin: 8px 0 0; color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -65,6 +71,13 @@
   
   <div class="content"><p><span style="font-weight: bold; color: rgb(235, 5, 5);">正如宝哥赛前所言，里尔客场1-0力克图卢兹，顺利赢球。昨晚竞火3中2，今晚全红信心足，竞盘火线继续约！</span><div><br></div><div>今晚是五大联赛德乙挪超等，宝哥给大家带来初步观点，希望能帮助大家中奖！</div><div><br></div><div><img src="./images/1788495151767-1-lille.jpg" alt="1-lille.png" loading="lazy" decoding="async"><p>昨晚法甲第3轮，正如宝哥所言，里尔客场1-0小胜图卢兹，顺利拿到了3分，<span style="text-align: center;">上田绮世第73分钟打进制胜球。新赛季前3轮，里尔2胜1平，目前暂时排名榜首。</span></p><p><img src="./images/1788495337773-2-real-sociedad.jpg" alt="2-real sociedad.png" loading="lazy" decoding="async"></p><p>西甲第6轮，皇家社会主场被塞尔塔0-0逼平，未能取得主场连胜。皇家社会全场有多达17次射门，5次射正，并疯狂刷出11个角球，但塞尔塔门将拉杜 凭借多次关键扑救成为了这场比赛客队力保球门不失的最大功臣。</p><p><img src="./images/1788495845237-3-stuttgart.jpg" alt="3-stuttgart.png" loading="lazy" decoding="async"></p><p>今天第一场关注德甲第2轮，斯图加特主场迎战科隆。首轮德甲，斯图加特客场1-5惨败给德甲巨无霸拜仁，这个结果不用意外。这次回到主场，面对最近几个赛季的手下败将科隆，我认为斯图加特主场开门红概率不小。</p><p><img src="./images/1788496122320-4-real-madrid.jpg" alt="4-real madrid.png" loading="lazy" decoding="async"></p><p>第二场关注西甲第4轮，排名第7的皇家贝蒂斯主场迎战第2名的皇马。穆里尼奥回归皇马后，带领球队取得3连胜开局，姆巴佩也是连续进球，延续了世界杯期间的状态。但贝蒂斯2胜1负，开局也不算差。最近10次交锋，贝蒂斯1胜5平4负，战平皇马的次数不少。这次继续防冷为好。</p><p><span style="font-weight: bold;">下面是今天的14场和任九初步观点：</span></p><p><img src="./images/1788495514702-14chang.jpg" alt="14chang.png" loading="lazy" decoding="async"></p><p><span style="font-weight: bold;">14场：10，3，310，3，10，10，31，31，103，301，3，301，0，10</span></p><p><span style="font-weight: bold;">任九：10，3，-，-，10，10，31，31，-，-，3，-，0，10</span></p><p><span style="font-weight: bold; color: rgb(251, 19, 19);">欢迎大家收藏宝哥首页，请分享给好友或转发到朋友圈，让更多人看到我。</span></p><p><span style="font-weight: bold; color: rgb(251, 19, 19);">安卓用户可以下载APP，更便捷看到宝哥每天的动态！</span></p><p><img src="./images/1788495702558-app.jpg" alt="app.png" loading="lazy" decoding="async"></p><p><br></p></div></p>
 </div>
+  <section id="article-likes" class="article-likes" aria-label="文章点赞">
+    <button type="button" class="like-button" aria-pressed="false" aria-describedby="like-status" disabled><span aria-hidden="true">👍</span> <span data-like-label>点赞</span> · <span data-like-count>—</span></button>
+    <p id="like-status" class="like-status" role="status" aria-live="polite"></p>
+    <noscript>请启用 JavaScript 后点赞。</noscript>
+  </section>
+  <script id="article-likes-config" type="application/json">{"firebase":{"apiKey":"AIzaSyB8uJml2H-Bl3MOHEpgKEOBZ4wApo8R8e8","projectId":"baogecaiba","appId":"1:901407342407:web:11191ed8c389f907ec1662"},"articleId":"2e22f671c7ad7061ab05e9cae0387a0b7e2b239e0c974cd1e3a8a70d43acf32c"}</script>
+  <script src="./article-likes.js" defer></script>
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>

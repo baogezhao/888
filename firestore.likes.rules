@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /articleLikes/{articleId}/votes/{visitorId} {
+      // Votes contain only a boolean and an anonymous document ID.
+      // Count queries require list access; do not add personal data here.
+      allow read: if articleId.matches('^[a-f0-9]{64}$');
+      allow create, update: if request.auth != null
+        && request.auth.uid == visitorId
+        && articleId.matches('^[a-f0-9]{64}$')
+        && request.resource.data.keys().hasOnly(['liked'])
+        && request.resource.data.liked == true;
+      allow delete: if request.auth != null && request.auth.uid == visitorId;
+    }
+  }
+}

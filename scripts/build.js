@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 const { marked } = require('marked');
+const { createHash } = require('crypto');
 
 const postsDir = path.join(__dirname, '../posts');
 const outputDir = path.join(__dirname, '../dist');
@@ -59,6 +60,17 @@ const announcement = {
 const goatcounterCode = /^[a-z0-9-]+$/.test(siteConfig.analytics?.goatcounterCode || '')
   ? siteConfig.analytics.goatcounterCode
   : '';
+const likesEnabled = siteConfig.likes?.enabled === true;
+const likesFirebase = {
+  apiKey: String(siteConfig.likes?.firebase?.apiKey || ''),
+  projectId: String(siteConfig.likes?.firebase?.projectId || ''),
+  ...(siteConfig.likes?.firebase?.appId ? { appId: String(siteConfig.likes.firebase.appId) } : {})
+};
+if (likesEnabled) {
+  for (const filename of ['article-likes.js', 'firebase-likes.js']) {
+    fs.copyFileSync(path.join(__dirname, filename), path.join(outputDir, filename));
+  }
+}
 
 function findFirstImage(content) {
   const markdownImage = content.match(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+["'][^"']*["'])?\s*\)/);
@@ -185,6 +197,12 @@ posts.forEach(post => {
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
     .wechat-guide p { max-width: 320px; margin: 16px 0 0 auto; font-size: 18px; line-height: 1.7; }
     .wechat-share-thumbnail { position: absolute; left: -10000px; top: 0; width: 300px; height: 300px; object-fit: cover; opacity: .01; pointer-events: none; }
+    .article-likes { margin-top: 32px; padding: 24px 12px; border-top: 1px solid #eee; text-align: center; }
+    .like-button { min-height: 48px; padding: 10px 24px; border: 1px solid #b91c1c; border-radius: 999px; background: #fff; color: #b91c1c; font-size: 17px; cursor: pointer; }
+    .like-button[aria-pressed="true"] { background: #b91c1c; color: #fff; }
+    .like-button:disabled { opacity: .6; cursor: default; }
+    .like-button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
+    .like-status { min-height: 24px; margin: 8px 0 0; color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -207,6 +225,13 @@ posts.forEach(post => {
   </div>
   ${post.detailCover ? `<img class="cover" src="${post.detailCover}" alt="${post.title}">` : ''}
   <div class="content">${post.htmlContent}</div>
+  ${likesEnabled ? `<section id="article-likes" class="article-likes" aria-label="文章点赞">
+    <button type="button" class="like-button" aria-pressed="false" aria-describedby="like-status" disabled><span aria-hidden="true">👍</span> <span data-like-label>点赞</span> · <span data-like-count>—</span></button>
+    <p id="like-status" class="like-status" role="status" aria-live="polite"></p>
+    <noscript>请启用 JavaScript 后点赞。</noscript>
+  </section>
+  <script id="article-likes-config" type="application/json">${safeJsonLd({ firebase: likesFirebase, articleId: createHash('sha256').update(post.slug).digest('hex') })}</script>
+  <script src="./article-likes.js" defer></script>` : ''}
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>
