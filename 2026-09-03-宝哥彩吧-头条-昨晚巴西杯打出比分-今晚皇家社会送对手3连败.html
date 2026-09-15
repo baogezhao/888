@@ -42,6 +42,12 @@
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
     .wechat-guide p { max-width: 320px; margin: 16px 0 0 auto; font-size: 18px; line-height: 1.7; }
     .wechat-share-thumbnail { position: absolute; left: -10000px; top: 0; width: 300px; height: 300px; object-fit: cover; opacity: .01; pointer-events: none; }
+    .article-likes { margin-top: 32px; padding: 24px 12px; border-top: 1px solid #eee; text-align: center; }
+    .like-button { min-height: 48px; padding: 10px 24px; border: 1px solid #b91c1c; border-radius: 999px; background: #fff; color: #b91c1c; font-size: 17px; cursor: pointer; }
+    .like-button[aria-pressed="true"] { background: #b91c1c; color: #fff; }
+    .like-button:disabled { opacity: .6; cursor: default; }
+    .like-button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
+    .like-status { min-height: 24px; margin: 8px 0 0; color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -65,6 +71,13 @@
   
   <div class="content"><div><span style="font-weight: bold; color: rgb(236, 9, 65);">昨晚竞火再次3中2打出比分，弗拉门戈主场2-0完胜米拉索！今晚竞盘火线继续约~</span></div><div><br></div><div>昨晚意大利杯第2轮，乌迪内斯主场2-1力克威尼斯，顺利晋级下一轮。巴约梅开二度，帮助乌迪内斯主场逆转对手。另一场，萨索洛主场被弗洛西诺1-1逼平，最后的点球大战，还是萨索洛主场4-3点球i获胜。</div><div><br></div><img src="./images/1788407106014-1-udinese.jpg" alt="1-udinese.jpg" loading="lazy" decoding="async"><div><br><div>巴甲第4轮补赛，弗拉门戈主场2-0完胜米拉索，宝哥再次命中比分！卡拉斯卡尔上半场传射建功。弗拉门戈主场迎来4连胜！与榜首的帕尔梅拉斯只有1分差距！</div><div><br></div><div><img src="./images/1788407325915-2-flamengo.jpg" alt="2-flamengo.jpeg" loading="lazy" decoding="async"><p>今晚我们关注五大联赛双赛，西甲第6轮，皇家社会主场迎战塞尔塔。上轮西甲，皇家社会主场2-1力克西班牙人，取得新赛季首胜，同时也是主场赢球。塞尔塔则是遭遇两连败，3轮比赛仅拿到1分。上赛季两次交锋，皇家社会对塞尔塔1胜1平优势明显。本场比赛，可继续看好！</p><p><img src="./images/1788407508336-4-real-sociedad.jpg" alt="4-real sociedad.png" loading="lazy" decoding="async"></p><p>另外，关注法甲第3轮，图卢兹主场迎战里尔。里尔新赛季1胜1平，包括主场2-2遗憾被大巴黎逼平，两场比赛打进4球，球队的进攻端表现不错。最近4次交锋，里尔均战胜了图卢兹，心理优势明显。这次继续看好？</p><p><img src="./images/1788407735242-3-lille.jpg" alt="3-lille.png" loading="lazy" decoding="async"></p><p><span style="font-weight: bold;">感谢大家对宝哥的支持，记得在原生浏览器打开，收藏宝哥的主页，每天方便查看宝哥动态。</span></p><p><span style="font-weight: bold;">也麻烦大家分享给好友，转发到朋友圈。</span></p><p><br></p></div></div>
 </div>
+  <section id="article-likes" class="article-likes" aria-label="文章点赞">
+    <button type="button" class="like-button" aria-pressed="false" aria-describedby="like-status" disabled><span aria-hidden="true">👍</span> <span data-like-label>点赞</span> · <span data-like-count>—</span></button>
+    <p id="like-status" class="like-status" role="status" aria-live="polite"></p>
+    <noscript>请启用 JavaScript 后点赞。</noscript>
+  </section>
+  <script id="article-likes-config" type="application/json">{"firebase":{"apiKey":"AIzaSyB8uJml2H-Bl3MOHEpgKEOBZ4wApo8R8e8","projectId":"baogecaiba","appId":"1:901407342407:web:11191ed8c389f907ec1662"},"articleId":"5fb9d2cd476c384db6ee5f3d90e70b17d99dcf0ca160a7e09a8f3f3a2f8df25b"}</script>
+  <script src="./article-likes.js" defer></script>
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>

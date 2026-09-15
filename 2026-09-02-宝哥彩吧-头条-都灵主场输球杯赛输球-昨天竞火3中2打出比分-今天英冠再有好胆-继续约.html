@@ -42,6 +42,12 @@
     .wechat-guide .arrow { font-size: 48px; line-height: 1; }
     .wechat-guide p { max-width: 320px; margin: 16px 0 0 auto; font-size: 18px; line-height: 1.7; }
     .wechat-share-thumbnail { position: absolute; left: -10000px; top: 0; width: 300px; height: 300px; object-fit: cover; opacity: .01; pointer-events: none; }
+    .article-likes { margin-top: 32px; padding: 24px 12px; border-top: 1px solid #eee; text-align: center; }
+    .like-button { min-height: 48px; padding: 10px 24px; border: 1px solid #b91c1c; border-radius: 999px; background: #fff; color: #b91c1c; font-size: 17px; cursor: pointer; }
+    .like-button[aria-pressed="true"] { background: #b91c1c; color: #fff; }
+    .like-button:disabled { opacity: .6; cursor: default; }
+    .like-button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
+    .like-status { min-height: 24px; margin: 8px 0 0; color: #666; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -65,6 +71,13 @@
   
   <div class="content"><p><span style="font-weight: bold; color: rgb(244, 11, 11);">昨天竞火3中2打出比分，遗憾都灵主场输球遭淘汰，今晚竞盘火线继续约！</span><div><span style="font-weight: 700;"><br></span><div><img src="./images/1788318583247-1-sheffield-united.jpg" alt="1-sheffield united.png" loading="lazy" decoding="async"><p>昨天英冠第4轮，之前遭遇3连平的谢菲联主场3-2力克博尔顿，拿到宝贵3分。多诺万第93分钟打进制胜球，否则谢菲联就将遭遇4连平的尴尬了。其他场次，伯明翰主场与南安普顿1-1战平，上半场补时阶段两队各进一球，就此锁定结果，<span style="font-weight: bold; color: rgb(242, 13, 13);">宝哥命中这场比赛的比分</span>！</p><p><img src="./images/1788318873623-2-torino.jpg" alt="2-torino.jpg" loading="lazy" decoding="async"></p><p><span style="font-weight: bold;">意大利杯第2轮则成为冷门温床</span>。都灵主场0-1不敌蒙扎，惨遭淘汰。<span style="color: rgb(51, 51, 51); font-family: &quot;Times New Roman&quot;; text-align: center;">D.莫塔上半场第48分钟为蒙扎打进唯一进球。另一场意大利杯，帕尔马主场0-2不敌意乙球队克雷莫纳。</span></p><p><img src="./images/1788319249232-3-west-brom.jpg" alt="3-west brom.png" loading="lazy" decoding="async"></p><p>今天继续关注英冠第4轮，西布罗主场迎战查尔顿。上轮西布罗客场1-3不敌米德尔斯堡，遭遇两连败。查尔顿主场1-0力克普雷斯顿，迎来英冠3连胜。本场比赛加上主客场因素，看起来似乎势均力敌，但从目前的指数看，主场作战的西布罗赢球希望大。</p><p><img src="./images/1788319481315-4-udinese.jpg" alt="4-udinese.png" loading="lazy" decoding="async"></p><p>意大利杯可能会继续爆冷。今晚关注意大利杯第2轮，乌迪内斯主场迎战刚刚从意乙升级的威尼斯。新赛季前两轮，乌迪内斯1胜1平，与威尼斯的两连败形成鲜明对比。加上乌迪内斯交锋优势明显，但目前的指数调整似乎对乌迪内斯赢球并不是信心那么足。是防冷重点了！</p><p><span style="font-weight: bold;">感谢支持宝哥，请收藏宝哥新网站的首页，并转发给更多好友，分享到朋友圈！</span></p></div></div></p>
 </div>
+  <section id="article-likes" class="article-likes" aria-label="文章点赞">
+    <button type="button" class="like-button" aria-pressed="false" aria-describedby="like-status" disabled><span aria-hidden="true">👍</span> <span data-like-label>点赞</span> · <span data-like-count>—</span></button>
+    <p id="like-status" class="like-status" role="status" aria-live="polite"></p>
+    <noscript>请启用 JavaScript 后点赞。</noscript>
+  </section>
+  <script id="article-likes-config" type="application/json">{"firebase":{"apiKey":"AIzaSyB8uJml2H-Bl3MOHEpgKEOBZ4wApo8R8e8","projectId":"baogecaiba","appId":"1:901407342407:web:11191ed8c389f907ec1662"},"articleId":"0b16fe47de8a6932969e8fdeff4394bd908f5b50925ed2568476a9e14367e94f"}</script>
+  <script src="./article-likes.js" defer></script>
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>
