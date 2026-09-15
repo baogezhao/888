@@ -48,6 +48,17 @@
     .like-button:disabled { opacity: .6; cursor: default; }
     .like-button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
     .like-status { min-height: 24px; margin: 8px 0 0; color: #666; font-size: 14px; }
+    .donation { margin: 20px 0 32px; text-align: center; }
+    .donation p { color: #666; font-size: 14px; }
+    .donation-button { display: inline-block; padding: 10px 24px; border-radius: 999px; background: #168a45; color: white; text-decoration: none; }
+    .donation-button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 4px; }
+    .donation-dialog { box-sizing: border-box; width: min(420px, calc(100% - 32px)); max-height: calc(100% - 32px); padding: 20px; border: 0; border-radius: 16px; text-align: center; color: #292524; overflow-y: auto; }
+    .donation-dialog::backdrop { background: rgba(0,0,0,.6); }
+    .donation-dialog h2 { margin: 6px 0 12px; }
+    .donation-dialog img { display: block; width: 100%; height: auto; }
+    .donation-dialog p { font-size: 14px; color: #666; }
+    .donation-dialog a { color: #168a45; }
+    .donation-close { min-height: 44px; padding: 8px 24px; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -78,6 +89,31 @@
   </section>
   <script id="article-likes-config" type="application/json">{"firebase":{"apiKey":"AIzaSyB8uJml2H-Bl3MOHEpgKEOBZ4wApo8R8e8","projectId":"baogecaiba","appId":"1:901407342407:web:11191ed8c389f907ec1662"},"articleId":"134bfe3a32ce7c8aa4c922a4b272c3d1e25d4a79eda440f4d27686fa3b581ac9"}</script>
   <script src="./article-likes.js" defer></script>
+  <section class="donation" aria-label="微信打赏">
+    <p>如果文章对你有帮助，欢迎自愿打赏。</p>
+    <a id="donation-open" class="donation-button" href="./images/wechat-donation.png">微信打赏</a>
+  </section>
+  <dialog id="donation-dialog" class="donation-dialog" aria-labelledby="donation-title">
+    <h2 id="donation-title">微信打赏</h2>
+    <img src="./images/wechat-donation.png" alt="宝哥的微信收款二维码" width="524" height="556" loading="lazy">
+    <p>感谢支持，金额随心。请使用微信扫描二维码。</p>
+    <p>同一部手机可先保存图片，再在微信扫一扫中选择相册。</p>
+    <p><a href="./images/wechat-donation.png" download="宝哥微信收款码.png">保存收款码</a> · <a href="./images/wechat-donation.png" target="_blank" rel="noopener">查看原图</a></p>
+    <form method="dialog"><button class="donation-close" autofocus>关闭</button></form>
+  </dialog>
+  <script>
+    (() => {
+      const dialog = document.getElementById('donation-dialog');
+      const opener = document.getElementById('donation-open');
+      if (typeof dialog.showModal !== 'function') { dialog.hidden = true; return; }
+      opener.setAttribute('aria-haspopup', 'dialog');
+      opener.addEventListener('click', event => { event.preventDefault(); dialog.showModal(); });
+      dialog.addEventListener('click', event => {
+        const bounds = dialog.getBoundingClientRect();
+        if (event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) dialog.close();
+      });
+    })();
+  </script>
   <div id="wechat-guide" class="wechat-guide">
     <div class="arrow">↗</div>
     <p id="wechat-guide-text"></p>
