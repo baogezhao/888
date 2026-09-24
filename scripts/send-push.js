@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 const matter = require('gray-matter');
+const { waitForPage } = require('./wait-for-page');
 
 const SITE_URL = 'https://baogezhao.github.io/888';
 const TOPIC = 'all_users';
@@ -150,6 +151,7 @@ async function main() {
     console.log('本次提交没有新增或更新文章，跳过推送。');
     return;
   }
+  await waitForPage(message.url);
   await send(message);
 }
 
