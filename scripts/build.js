@@ -118,7 +118,6 @@ const posts = files.map(filename => {
     source: data.source || '本站',
     // Prefer an explicitly selected cover, otherwise use the first body image.
     thumbnail: data.thumbnail || findFirstImage(content),
-    detailCover: data.thumbnail || '',
     summary,
     htmlContent
   };
@@ -234,7 +233,6 @@ posts.forEach(post => {
     <span>发布时间：${post.date}</span> | 
     <span class="source-tag">来源：${post.source}</span>
   </div>
-  ${post.detailCover ? `<img class="cover" src="${post.detailCover}" alt="${post.title}">` : ''}
   <div class="content">${post.htmlContent}</div>
   ${likesEnabled ? `<section id="article-likes" class="article-likes" aria-label="文章点赞">
     <button type="button" class="like-button" aria-pressed="false" aria-describedby="like-status" disabled><span aria-hidden="true">👍</span> <span data-like-label>点赞</span> · <span data-like-count>—</span></button>
