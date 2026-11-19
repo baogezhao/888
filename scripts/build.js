@@ -126,6 +126,11 @@ const posts = files.map(filename => {
 // 按完整发布时间倒序排列，同一天发布的文章也会按具体时间排序。
 posts.sort((a, b) => b.publishedTimestamp - a.publishedTimestamp);
 
+const analysisGuide = posts.find(post => post.slug === 'football-analysis-guide');
+const analysisGuideLink = analysisGuide
+  ? `<a href="./${analysisGuide.slug}.html">足彩分析入门与赛后复盘</a>`
+  : '';
+
 // 2. 生成文章详情页
 posts.forEach(post => {
   const articleUrl = `${siteUrl}/${encodeURIComponent(post.slug)}.html`;
@@ -234,6 +239,7 @@ posts.forEach(post => {
     <span class="source-tag">来源：${post.source}</span>
   </div>
   <div class="content">${post.htmlContent}</div>
+  ${analysisGuideLink && post !== analysisGuide ? `<p>相关阅读 · ${analysisGuideLink}</p>` : ''}
   ${likesEnabled ? `<section id="article-likes" class="article-likes" aria-label="文章点赞">
     <button type="button" class="like-button" aria-pressed="false" aria-describedby="like-status" disabled><span aria-hidden="true">👍</span> <span data-like-label>点赞</span> · <span data-like-count>—</span></button>
     <p id="like-status" class="like-status" role="status" aria-live="polite"></p>
@@ -386,7 +392,7 @@ const indexHtml = `<!DOCTYPE html>
   <link rel="canonical" href="${siteUrl}/">
   <link rel="icon" type="image/png" href="./images/site-logo.png">
   <link rel="apple-touch-icon" href="./images/site-logo.png">
-  <title>宝哥彩吧官方网站｜宝哥足彩分析与赛事复盘</title>
+  <title>宝哥彩吧官方网站｜足彩分析、赛事复盘与足彩五要素</title>
   <script type="application/ld+json">${homeJsonLd}</script>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fa; }
@@ -453,6 +459,7 @@ const indexHtml = `<!DOCTYPE html>
       </div>
     </section>
     <h1>最新文章</h1>
+    ${analysisGuideLink ? `<p>${analysisGuideLink}</p>` : ''}
     <ul class="post-list">
       ${listItemsHtml}
     </ul>
