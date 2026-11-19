@@ -44,6 +44,9 @@ if (fs.existsSync(outputDir)) {
 }
 fs.mkdirSync(outputDir, { recursive: true });
 
+const googleVerificationFile = 'google342e28363c3bcd20.html';
+fs.copyFileSync(path.join(__dirname, '..', googleVerificationFile), path.join(outputDir, googleVerificationFile));
+
 let siteConfig = {};
 if (fs.existsSync(siteConfigFile)) {
   try {
